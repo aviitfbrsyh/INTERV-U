@@ -1,0 +1,6 @@
+{
+  "name": "Intervyou",
+  "description": "AI-powered professional interview simulator with divine-level evaluation and real-time voice feedback.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["Real-time Voice AI", "CV Analysis", "Professional HR Evaluation"]
+}
