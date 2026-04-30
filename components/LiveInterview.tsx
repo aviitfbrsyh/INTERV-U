@@ -5,14 +5,16 @@ import { Mic, MicOff, PhoneOff, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI, LiveServerMessage, Modality, StartSensitivity, EndSensitivity } from "@google/genai";
 import { AudioManager } from '@/lib/audio-manager';
+import { CrossMatchData } from '@/lib/cross-match';
 
 interface LiveInterviewProps {
   cvText: string;
   jdText: string;
+  crossMatchData: CrossMatchData | null;
   onEnd: (history: string) => void;
 }
 
-export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewProps) {
+export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }: LiveInterviewProps) {
   const [status, setStatus] = useState<'connecting' | 'active' | 'ending'>('connecting');
   const [isMuted, setIsMuted] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
@@ -21,6 +23,8 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
   // Incrementing this triggers a reconnection attempt (used by retry button)
   const [retryCount, setRetryCount] = useState(0);
 
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+
   const audioManager = useRef<AudioManager | null>(null);
   const sessionRef = useRef<any>(null);
   const historyRef = useRef<string>("");
@@ -28,6 +32,9 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
   // Ref for muted state so the microphone callback always reads the latest
   // value without causing the effect to re-run on every mute toggle.
   const isMutedRef = useRef(false);
+  // Latency tracking: timestamp of last user audio chunk sent, reset each AI turn.
+  const lastUserAudioTime = useRef<number>(0);
+  const aiTurnMeasured = useRef<boolean>(false);
 
   useEffect(() => {
     // `cancelled` is local to each effect invocation. React 18 Strict Mode
@@ -89,6 +96,19 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
           2. BERIKAN REAKSI MANUSIAWI: "Hmm...", "Oke, saya mengerti poinnya...", "Ah, menarik sekali sudut pandangnya.", "Baik, saya catat itu."
           3. PACING: Berikan jeda setelah kandidat selesai bicara, seolah Anda sedang mencatat hal penting, baru kemudian merespon.
 
+          HASIL ANALISIS CROSS-MATCHING CV vs JD (RAHASIA — PANDUAN WAWANCARA ANDA):
+          ${crossMatchData ? `
+          - Skor Kesesuaian Kandidat: ${crossMatchData.match_score}/100
+          - Skills yang Cocok dengan JD: ${crossMatchData.matched_skills.length > 0 ? crossMatchData.matched_skills.join(', ') : 'Tidak teridentifikasi'}
+          - SKILL GAP — AREA PRIORITAS UNTUK DIGALI: ${crossMatchData.skill_gaps.length > 0 ? crossMatchData.skill_gaps.join(', ') : 'Tidak ada gap signifikan'}
+          - Penilaian Pengalaman: ${crossMatchData.experience_verdict}
+          - Area Fokus Wawancara:
+          ${crossMatchData.focus_areas.map((f, i) => `  ${i + 1}. ${f}`).join('\n          ')}
+          - Ringkasan Kesesuaian: ${crossMatchData.summary}
+
+          INSTRUKSI: Mulai dari kekuatan kandidat yang teridentifikasi, lalu secara elegan probe ke area skill gap. Jangan sebut "gap" secara eksplisit kepada kandidat.
+          ` : 'Data cross-matching tidak tersedia. Gunakan CV dan JD di bawah untuk menentukan fokus pertanyaan.'}
+
           KONTEN DATA:
           - Pengalaman Kandidat (CV): ${cvText}
           - Kebutuhan Jabatan (JD): ${jdText}
@@ -117,6 +137,8 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
               sessionRef.current.sendRealtimeInput({
                 audio: { data: base64Data, mimeType: 'audio/pcm;rate=24000' }
               });
+              lastUserAudioTime.current = Date.now();
+              aiTurnMeasured.current = false;
             } catch (_) {
               // Session may be closing — silently ignore.
             }
@@ -159,6 +181,10 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
 
               const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
               if (base64Audio) {
+                if (!aiTurnMeasured.current && lastUserAudioTime.current > 0) {
+                  aiTurnMeasured.current = true;
+                  setLatencyMs(Date.now() - lastUserAudioTime.current);
+                }
                 setIsAiSpeaking(true);
                 mgr.playPCM(base64Audio);
                 if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
@@ -449,7 +475,7 @@ export default function LiveInterview({ cvText, jdText, onEnd }: LiveInterviewPr
       {/* Footer Info */}
       <footer className="mt-6 flex justify-between items-center px-2 text-[10px] text-slate-500 font-mono">
         <div className="flex gap-6">
-          <span>Latensi: <span className="text-emerald-500">12ms</span></span>
+          <span>Latensi: <span className={latencyMs === null ? 'text-slate-500' : latencyMs < 1500 ? 'text-emerald-500' : 'text-amber-400'}>{latencyMs === null ? '--' : `${latencyMs}ms`}</span></span>
           <span>Engine: <span className="text-blue-400">GEMINI-LIVE-V3</span></span>
           <span>Status: <span className="text-white uppercase">{status}</span></span>
         </div>

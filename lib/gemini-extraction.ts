@@ -62,7 +62,7 @@ export interface JDData {
 export async function extractCV(input: { text?: string, file?: { base64: string, mimeType: string } }): Promise<CVData> {
   const parts: any[] = [];
   const ai = getAI();
-  
+
   if (input.file) {
     parts.push({
       inlineData: {
@@ -152,7 +152,7 @@ export async function extractCV(input: { text?: string, file?: { base64: string,
 export async function extractJD(textOrFile: { text?: string, file?: { base64: string, mimeType: string } }): Promise<JDData> {
   const parts: any[] = [];
   const ai = getAI();
-  
+
   if (textOrFile.file) {
     parts.push({
       inlineData: {

@@ -6,6 +6,7 @@ import LiveInterview from '@/components/LiveInterview';
 import InterviewEvaluation from '@/components/InterviewEvaluation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Sparkles, Shield, Cpu, Zap, Star } from 'lucide-react';
+import { CrossMatchData } from '@/lib/cross-match';
 
 type AppState = 'landing' | 'setup' | 'interview' | 'evaluation';
 
@@ -14,10 +15,12 @@ export default function Home() {
   const [cvText, setCvText] = useState('');
   const [jdText, setJdText] = useState('');
   const [history, setHistory] = useState('');
+  const [crossMatchData, setCrossMatchData] = useState<CrossMatchData | null>(null);
 
-  const handleStart = (cv: string, jd: string) => {
+  const handleStart = (cv: string, jd: string, matchData: CrossMatchData) => {
     setCvText(cv);
     setJdText(jd);
+    setCrossMatchData(matchData);
     setState('interview');
   };
 
@@ -29,6 +32,7 @@ export default function Home() {
   const handleReset = () => {
     setState('setup');
     setHistory('');
+    setCrossMatchData(null);
   };
 
   return (
@@ -371,10 +375,11 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 overflow-hidden"
             >
-              <LiveInterview 
-                cvText={cvText} 
-                jdText={jdText} 
-                onEnd={handleEnd} 
+              <LiveInterview
+                cvText={cvText}
+                jdText={jdText}
+                crossMatchData={crossMatchData}
+                onEnd={handleEnd}
               />
             </motion.div>
           )}
@@ -397,11 +402,12 @@ export default function Home() {
                     </button>
                 </nav>
               <div className="flex-grow w-full">
-                <InterviewEvaluation 
-                  history={history} 
-                  cvText={cvText} 
-                  jdText={jdText} 
-                  onReset={handleReset} 
+                <InterviewEvaluation
+                  history={history}
+                  cvText={cvText}
+                  jdText={jdText}
+                  crossMatchData={crossMatchData}
+                  onReset={handleReset}
                 />
               </div>
             </motion.div>

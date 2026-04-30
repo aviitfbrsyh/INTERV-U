@@ -4,10 +4,11 @@ import { useState, useRef } from 'react';
 import { Upload, FileText, ChevronRight, Briefcase, Loader2, Edit3, CheckCircle, FileUp, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractCV, extractJD, CVData, JDData } from '@/lib/gemini-extraction';
+import { crossMatch, CrossMatchData } from '@/lib/cross-match';
 import { CVForm, JDForm } from '@/components/StructuredDataForm';
 
 interface InterviewSetupProps {
-  onStart: (cvText: string, jdText: string) => void;
+  onStart: (cvText: string, jdText: string, crossMatchData: CrossMatchData) => void;
 }
 
 type SetupStep = 'input' | 'review';
@@ -25,6 +26,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
 
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [jdData, setJdData] = useState<JDData | null>(null);
+  const [isCrossMatching, setIsCrossMatching] = useState(false);
 
   const cvFileRef = useRef<HTMLInputElement>(null);
   const jdFileRef = useRef<HTMLInputElement>(null);
@@ -91,10 +93,28 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     }
   };
 
-  const handleFinalStart = () => {
+  const handleFinalStart = async () => {
     const finalCV = cvData ? JSON.stringify(cvData, null, 2) : cvRawText;
     const finalJD = jdData ? JSON.stringify(jdData, null, 2) : jdRawText;
-    onStart(finalCV, finalJD);
+
+    setIsCrossMatching(true);
+    try {
+      const matchData = await crossMatch(finalCV, finalJD);
+      onStart(finalCV, finalJD, matchData);
+    } catch (err) {
+      console.error('Cross-match analysis failed:', err);
+      const fallback: CrossMatchData = {
+        match_score: 0,
+        matched_skills: [],
+        skill_gaps: [],
+        experience_verdict: 'Analisis tidak tersedia',
+        focus_areas: [],
+        summary: 'Tidak dapat melakukan analisis kesesuaian.',
+      };
+      onStart(finalCV, finalJD, fallback);
+    } finally {
+      setIsCrossMatching(false);
+    }
   };
 
   return (
@@ -292,10 +312,20 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 </div>
                 <button
                     onClick={handleFinalStart}
-                    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20"
+                    disabled={isCrossMatching}
+                    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                    <span>Mulai Wawancara Sekarang</span>
-                    <ChevronRight size={20} />
+                    {isCrossMatching ? (
+                        <>
+                            <Loader2 size={20} className="animate-spin" />
+                            <span>Menganalisis Kesesuaian CV...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Mulai Wawancara Sekarang</span>
+                            <ChevronRight size={20} />
+                        </>
+                    )}
                 </button>
             </div>
 

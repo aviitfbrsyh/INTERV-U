@@ -6,47 +6,131 @@ import { Trophy, Target, AlertTriangle, CheckCircle, RefreshCcw, Download } from
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { GoogleGenAI } from "@google/genai";
+import { CrossMatchData } from '@/lib/cross-match';
 
 interface InterviewEvaluationProps {
   history: string;
   cvText: string;
   jdText: string;
+  crossMatchData?: CrossMatchData | null;
   onReset: () => void;
 }
 
-export default function InterviewEvaluation({ history, cvText, jdText, onReset }: InterviewEvaluationProps) {
+export default function InterviewEvaluation({ history, cvText, jdText, crossMatchData, onReset }: InterviewEvaluationProps) {
   const [evaluation, setEvaluation] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const generateEvaluation = async () => {
+      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+
+      const callWithRetry = async (prompt: string, retries = 3, delayMs = 5000): Promise<string> => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const response = await ai.models.generateContent({
+              model: "gemini-3-flash-preview",
+              contents: prompt,
+            });
+            return response.text || 'Gagal menghasilkan evaluasi.';
+          } catch (err: any) {
+            const isRetryable = err?.status === 429 || err?.status === 503
+              || err?.message?.includes('429') || err?.message?.includes('503')
+              || err?.message?.includes('RESOURCE_EXHAUSTED') || err?.message?.includes('UNAVAILABLE');
+            if (!isRetryable || i === retries - 1) throw err;
+            await new Promise(res => setTimeout(res, delayMs * (i + 1)));
+          }
+        }
+        throw new Error('Max retries reached');
+      };
+
       try {
-        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+        const crossMatchContext = crossMatchData ? `
+          HASIL PRE-ANALYSIS CROSS-MATCHING (Gunakan sebagai acuan evaluasi):
+          - Skor Kesesuaian Awal: ${crossMatchData.match_score}/100
+          - Skills yang Cocok dengan JD: ${crossMatchData.matched_skills.join(', ') || '-'}
+          - Skill Gap yang Teridentifikasi: ${crossMatchData.skill_gaps.join(', ') || 'Tidak ada'}
+          - Penilaian Pengalaman: ${crossMatchData.experience_verdict}
+          - Area yang Seharusnya Digali: ${crossMatchData.focus_areas.join('; ')}
+          - Ringkasan Awal: ${crossMatchData.summary}
+        ` : '';
+
         const prompt = `
-          Sebagai HR Expert Senior, berikan evaluasi mendalam berdasarkan transkrip wawancara berikut.
-          
+          Anda adalah LLM-as-a-Judge — seorang HR Expert Senior yang melakukan evaluasi objektif dan terstruktur berdasarkan transkrip wawancara berikut.
+
           DATA:
           - CV Kandidat: ${cvText}
           - Job Description: ${jdText}
           - Transkrip Wawancara: ${history}
-          
-          FORMAT EVALUASI (Gunakan Markdown):
-          1. **Skor Keseluruhan**: (Berikan skor 1-100)
-          2. **Analisis Kriteria**: (Gunakan tabel untuk Technical Skill, Emotional Intelligence, Communication, dan Culture Fit)
-          3. **Kekuatan Utama**: (Minimal 3 poin)
-          4. **Kelemahan & Area Pengembangan**: (Minimal 3 poin)
-          5. **Feedback Per Pertanyaan**: (Analisis bagaimana kandidat menjawab pertanyaan-pertanyaan kunci)
-          6. **Kesimpulan Akhir**: (Apakah Anda merekomendasikan kandidat ini? Mengapa?)
-          
-          Gunakan Bahasa Indonesia yang profesional dan berikan kritik yang membangun secara detail.
+          ${crossMatchContext}
+
+          FORMAT EVALUASI (Gunakan Markdown dengan tepat):
+
+          ## 1. Skor Keseluruhan
+          Berikan skor akhir 1–100 beserta justifikasi singkat 2–3 kalimat.
+
+          ## 2. Evaluasi Metrik ConCISE
+          ConCISE adalah metrik evaluasi kelugasan komunikasi kandidat. Nilai setiap dimensi dengan skor 1–10 dan berikan penjelasan singkat berbasis bukti dari transkrip.
+
+          Gunakan tabel berikut:
+
+          | Dimensi | Skor (1–10) | Penjelasan Berbasis Transkrip |
+          |---|---|---|
+          | **Consistency** — Apakah jawaban kandidat konsisten dengan pertanyaan yang diajukan dan tidak keluar dari konteks? | | |
+          | **Clarity** — Apakah penyampaian kandidat jelas, tidak bertele-tele, dan mudah dipahami? | | |
+          | **Information** — Apakah jawaban mengandung informasi yang cukup dalam dan relevan? | | |
+          | **Structure** — Apakah jawaban terstruktur dengan baik (misal mengikuti pola narasi yang logis)? | | |
+          | **Effectiveness** — Apakah jawaban efektif menjawab inti pertanyaan pewawancara? | | |
+
+          **Skor ConCISE Total: XX/50** (jumlah kelima dimensi)
+
+          ## 3. Deteksi Pola Narasi STAR
+          Untuk setiap jawaban kunci kandidat yang mengandung cerita atau pengalaman, identifikasi komponen STAR yang hadir atau absen secara eksplisit.
+
+          **Panduan deteksi:**
+          - **S — Situation**: Kandidat menyebutkan konteks atau latar belakang kejadian
+          - **T — Task**: Kandidat menjelaskan tugas atau tantangan yang dihadapi
+          - **A — Action**: Kandidat mendeskripsikan tindakan konkret yang diambil
+          - **R — Result**: Kandidat menyebutkan hasil, dampak, atau pelajaran dari tindakannya
+
+          Untuk setiap jawaban kunci, gunakan format ini:
+
+          **Pertanyaan: "[kutip pertanyaan pewawancara]"**
+          | Komponen | Hadir? | Bukti dari Transkrip |
+          |---|---|---|
+          | S — Situation | ✓ / ✗ | [kutipan singkat atau "-" jika tidak ada] |
+          | T — Task | ✓ / ✗ | [kutipan singkat atau "-" jika tidak ada] |
+          | A — Action | ✓ / ✗ | [kutipan singkat atau "-" jika tidak ada] |
+          | R — Result | ✓ / ✗ | [kutipan singkat atau "-" jika tidak ada] |
+          **Skor STAR jawaban ini: X/4**
+
+          (Ulangi tabel di atas untuk setiap jawaban kunci yang ditemukan di transkrip)
+
+          **Rekapitulasi STAR Keseluruhan:**
+          - Total jawaban yang dianalisis: X
+          - Rata-rata skor kelengkapan STAR: X/4
+          - Komponen yang paling sering absen: [S / T / A / R]
+          - Interpretasi: [apakah kandidat cenderung skip konteks, atau skip hasil, dst.]
+
+          ## 4. Analisis Kesesuaian CV-JD
+          Berdasarkan skill gap yang teridentifikasi, seberapa baik kandidat mengisi gap tersebut selama wawancara?
+
+          ## 5. Kekuatan Utama
+          Minimal 3 poin kekuatan spesifik yang didukung kutipan atau parafrase dari transkrip.
+
+          ## 6. Kelemahan & Area Pengembangan
+          Minimal 3 poin kelemahan, fokus pada dimensi ConCISE yang rendah, komponen STAR yang sering absen, dan skill gap yang tidak terjawab.
+
+          ## 7. Feedback Per Pertanyaan
+          Analisis singkat untuk setiap pertanyaan kunci: apa yang dijawab dengan baik dan apa yang kurang.
+
+          ## 8. Kesimpulan Akhir
+          Rekomendasikan atau tidak? Berikan alasan berbasis data dari evaluasi di atas.
+
+          Gunakan Bahasa Indonesia yang profesional. Setiap penilaian harus didukung bukti dari transkrip, bukan opini umum.
         `;
 
-        const response = await ai.models.generateContent({
-          model: "gemini-3.1-pro-preview",
-          contents: prompt,
-        });
-
-        setEvaluation(response.text || 'Gagal menghasilkan evaluasi.');
+        const result = await callWithRetry(prompt);
+        setEvaluation(result);
       } catch (err) {
         console.error(err);
         setEvaluation('Terjadi kesalahan saat membuat evaluasi.');
