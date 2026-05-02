@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import InterviewSetup from '@/components/InterviewSetup';
 import LiveInterview from '@/components/LiveInterview';
 import InterviewEvaluation from '@/components/InterviewEvaluation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Sparkles, Shield, Cpu, Zap, Star } from 'lucide-react';
 import { CrossMatchData } from '@/lib/cross-match';
+import { runEvaluation, EvaluationData } from '@/lib/evaluate';
 
 type AppState = 'landing' | 'setup' | 'interview' | 'evaluation';
 
@@ -16,6 +17,9 @@ export default function Home() {
   const [jdText, setJdText] = useState('');
   const [history, setHistory] = useState('');
   const [crossMatchData, setCrossMatchData] = useState<CrossMatchData | null>(null);
+  const [prefetchedEvaluation, setPrefetchedEvaluation] = useState<EvaluationData | null>(null);
+  const [isPrefetching, setIsPrefetching] = useState(false);
+  const [prefetchError, setPrefetchError] = useState<string | null>(null);
 
   const handleStart = (cv: string, jd: string, matchData: CrossMatchData) => {
     setCvText(cv);
@@ -26,6 +30,20 @@ export default function Home() {
 
   const handleEnd = (conversationHistory: string) => {
     setHistory(conversationHistory);
+    setPrefetchedEvaluation(null);
+    setPrefetchError(null);
+    setIsPrefetching(true);
+
+    runEvaluation(conversationHistory, cvText, jdText, crossMatchData)
+      .then((result) => {
+        setPrefetchedEvaluation(result);
+        setIsPrefetching(false);
+      })
+      .catch((err) => {
+        setPrefetchError(err?.message || 'Terjadi kesalahan saat membuat evaluasi.');
+        setIsPrefetching(false);
+      });
+
     setState('evaluation');
   };
 
@@ -33,6 +51,9 @@ export default function Home() {
     setState('setup');
     setHistory('');
     setCrossMatchData(null);
+    setPrefetchedEvaluation(null);
+    setPrefetchError(null);
+    setIsPrefetching(false);
   };
 
   return (
@@ -408,6 +429,9 @@ export default function Home() {
                   jdText={jdText}
                   crossMatchData={crossMatchData}
                   onReset={handleReset}
+                  prefetchedEvaluation={prefetchedEvaluation}
+                  isPrefetching={isPrefetching}
+                  prefetchError={prefetchError}
                 />
               </div>
             </motion.div>

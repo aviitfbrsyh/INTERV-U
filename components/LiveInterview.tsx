@@ -151,7 +151,7 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
             onopen: () => {
               // Guard: StrictMode may have already cleaned up this effect run.
               if (cancelled) {
-                sessionPromise.then(s => { try { s.close(); } catch (_) {} });
+                sessionPromise.then(s => { try { s.close(); } catch (_) { } });
                 return;
               }
 
@@ -197,10 +197,25 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
                 if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
               }
 
+              // User speech transcription (from inputAudioTranscription config)
+              const inputTranscript = (message as any).serverContent?.inputTranscription?.text;
+              if (inputTranscript?.trim()) {
+                historyRef.current += `User: ${inputTranscript.trim()}\n`;
+                setTranscriptions(prev => [...prev.slice(-4), { role: 'user', text: inputTranscript.trim() }]);
+              }
+
+              // AI speech transcription (from outputAudioTranscription config)
+              const outputTranscript = (message as any).serverContent?.outputTranscription?.text;
+              if (outputTranscript?.trim()) {
+                historyRef.current += `AI: ${outputTranscript.trim()}\n`;
+                setTranscriptions(prev => [...prev.slice(-4), { role: 'ai', text: outputTranscript.trim() }]);
+              }
+
+              // Fallback: capture any text parts in modelTurn (rare with AUDIO modality)
               if (message.serverContent?.modelTurn) {
                 const parts = message.serverContent.modelTurn.parts || [];
-                const text = parts.map(p => p.text).join(" ");
-                if (text) {
+                const text = parts.map((p: any) => p.text || '').join(' ').trim();
+                if (text && !historyRef.current.endsWith(`AI: ${text}\n`)) {
                   historyRef.current += `AI: ${text}\n`;
                   setTranscriptions(prev => [...prev.slice(-4), { role: 'ai', text }]);
                 }
@@ -226,11 +241,8 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
             speechConfig: {
               voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
             },
-            // Reduce VAD sensitivity so the model waits for the user to
-            // fully finish speaking before treating it as end-of-turn.
-            // LOW start sensitivity = fewer false "speech started" triggers.
-            // LOW end sensitivity = waits longer before cutting the user off.
-            // silenceDurationMs = how long silence must last to end the turn.
+            outputAudioTranscription: {},
+            inputAudioTranscription: {},
             realtimeInputConfig: {
               automaticActivityDetection: {
                 startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
@@ -247,7 +259,7 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
 
         // Cleanup may have run while we were awaiting the session promise.
         if (cancelled) {
-          try { session.close(); } catch (_) {}
+          try { session.close(); } catch (_) { }
           return;
         }
 
@@ -265,7 +277,7 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
       cancelled = true;
       if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
       if (micFallbackTimer) clearTimeout(micFallbackTimer);
-      try { sessionRef.current?.close(); } catch (_) {}
+      try { sessionRef.current?.close(); } catch (_) { }
       sessionRef.current = null;
       audioManager.current?.close();
       audioManager.current = null;
@@ -280,7 +292,7 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
 
   const handleHangUp = () => {
     setStatus('ending');
-    try { sessionRef.current?.close(); } catch (_) {}
+    try { sessionRef.current?.close(); } catch (_) { }
     audioManager.current?.close();
     onEnd(historyRef.current);
   };
@@ -437,9 +449,8 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, onEnd }:
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 self-start">Control</h3>
           <button
             onClick={handleMuteToggle}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-              isMuted ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-            }`}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isMuted ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+              }`}
           >
             {isMuted ? <MicOff size={28} /> : <Mic size={28} />}
           </button>

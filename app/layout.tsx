@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${playfair.variable}`}>
       <head>
         <script
           suppressHydrationWarning
@@ -28,6 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       set: function() { console.warn('Blocked attempt to overwrite window.fetch'); },
                       configurable: true
                     });
+                  }
+                  if (typeof Element !== 'undefined') {
+                    var origSetAttr = Element.prototype.setAttribute;
+                    Element.prototype.setAttribute = function(name, value) {
+                      if (name === 'bis_skin_checked') return;
+                      return origSetAttr.call(this, name, value);
+                    };
                   }
                 } catch (e) {}
               })();
