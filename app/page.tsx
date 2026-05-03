@@ -21,6 +21,62 @@ function getAvatar(name: string): { initials: string; bg: string } {
   return { initials, bg };
 }
 
+function ProfileMenu({ initials, bg, name, onHistory, onLogout }: {
+  initials: string; bg: string; name: string;
+  onHistory: () => void; onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [open]);
+
+  return (
+    <div className="relative" onClick={e => e.stopPropagation()}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ background: bg }}
+        className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 select-none hover:opacity-90 transition-opacity ring-2 ring-white/10 hover:ring-white/30"
+      >
+        {initials}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-12 w-52 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden z-50"
+          >
+            <div className="px-4 py-3 border-b border-white/5">
+              <p className="text-xs font-bold text-white truncate">{name}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Akun tersambung</p>
+            </div>
+            <div className="p-1.5">
+              <button
+                onClick={() => { setOpen(false); onHistory(); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left"
+              >
+                <History size={15} className="text-slate-400" /> Riwayat Sesi
+              </button>
+              <button
+                onClick={() => { setOpen(false); onLogout(); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors text-left"
+              >
+                <span className="text-slate-400 text-base leading-none">↩</span> Keluar
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function extractField(text: string, keys: string[]): string {
   for (const key of keys) {
     const m = text.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`, 'i'));
@@ -157,28 +213,16 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {user && (
-                    <>
-                      <button
-                        onClick={() => router.push('/history')}
-                        className="hidden sm:flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors px-3 py-2 border border-white/10 rounded-xl"
-                      >
-                        <History size={14} /> Riwayat
-                      </button>
-                      {(() => { const a = getAvatar(user.displayName ?? user.email ?? '?'); return (
-                        <div style={{ background: a.bg }} className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 select-none">
-                          {a.initials}
-                        </div>
-                      ); })()}
-                      <button onClick={logout} className="text-xs text-slate-500 hover:text-white transition-colors hidden sm:block">Keluar</button>
-                    </>
-                  )}
                   <button
                     onClick={handleMulai}
                     className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full hover:bg-slate-200 transition-all text-sm font-bold shadow-xl shadow-white/10"
                   >
                     Mulai <ArrowRight size={14} />
                   </button>
+                  {user && (() => {
+                    const a = getAvatar(user.displayName ?? user.email ?? '?');
+                    return <ProfileMenu initials={a.initials} bg={a.bg} name={user.displayName ?? ''} onHistory={() => router.push('/history')} onLogout={logout} />;
+                  })()}
                 </div>
               </nav>
 
