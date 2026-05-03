@@ -150,7 +150,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {user ? (
+                  {user && (
                     <>
                       <button
                         onClick={() => router.push('/history')}
@@ -161,13 +161,6 @@ export default function Home() {
                       <img src={user.photoURL ?? ''} alt="" className="w-8 h-8 rounded-full border border-white/20" />
                       <button onClick={logout} className="text-xs text-slate-500 hover:text-white transition-colors hidden sm:block">Keluar</button>
                     </>
-                  ) : (
-                    <button
-                      onClick={() => router.push('/login')}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 text-white rounded-full hover:bg-white/20 transition-all text-sm font-bold"
-                    >
-                      Login
-                    </button>
                   )}
                   <button
                     onClick={handleMulai}
