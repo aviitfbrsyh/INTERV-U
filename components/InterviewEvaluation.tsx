@@ -14,6 +14,7 @@ import { retryAnswer, RetryResult } from '@/lib/practice-retry';
 import { askSiti, ChatMessage } from '@/lib/coaching-chat';
 import { generateSitiSpeech, generateSitiHighlight } from '@/lib/gemini-tts';
 import { transcribeAudio } from '@/lib/voice-transcribe';
+import { detectFillers, fillerLevelMeta } from '@/lib/filler-words';
 import CoachingLive, { LiveTranscript } from '@/components/CoachingLive';
 import { generateEvaluationReport } from '@/lib/generate-report';
 import ReactMarkdown from 'react-markdown';
@@ -85,7 +86,7 @@ export default function InterviewEvaluation({
             rotate: { duration: 2, repeat: Infinity, ease: "linear" },
             scale: { duration: 2, repeat: Infinity }
           }}
-          className="p-6 bg-slate-900 rounded-2xl border border-blue-500/30 shadow-2xl shadow-blue-500/10"
+          className="p-6 bg-slate-900 rounded-[2.5rem] border border-blue-500/30 shadow-2xl shadow-blue-500/10"
         >
           <Target className="w-12 h-12 text-blue-500" />
         </motion.div>
@@ -100,7 +101,7 @@ export default function InterviewEvaluation({
   if (error || !evaluation) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center max-w-md mx-auto">
-        <div className="p-6 bg-red-500/10 rounded-2xl border border-red-500/30">
+        <div className="p-6 bg-red-500/10 rounded-[2rem] border border-red-500/30">
           <AlertTriangle className="w-12 h-12 text-red-400" />
         </div>
         <div className="space-y-2">
@@ -130,51 +131,53 @@ export default function InterviewEvaluation({
   }[evaluation.recommendation_verdict] || 'Belum Dievaluasi';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="max-w-7xl mx-auto p-6 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
       {/* HEADER */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 flex items-center justify-between gap-4 border border-blue-400/20 shadow-2xl shadow-blue-900/40">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 shrink-0">
-            <Trophy className="w-6 h-6 text-white" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-white tracking-tight truncate">Laporan Evaluasi</h1>
-            <p className="text-blue-200 font-medium uppercase tracking-widest text-[9px] mt-0.5">
-              ConCISE · STAR · LLM-as-a-Judge
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="text-right mr-2">
-            <div className={`text-3xl font-black tracking-tighter leading-none ${evaluation.overall_score >= 80 ? 'text-emerald-300' : evaluation.overall_score >= 60 ? 'text-blue-200' : evaluation.overall_score >= 40 ? 'text-amber-300' : 'text-red-300'}`}>
-              {evaluation.overall_score}
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 lg:col-span-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-8 flex items-center justify-between border border-blue-400/20 shadow-2xl shadow-blue-900/40">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20">
+              <Trophy className="w-8 h-8 text-white" />
             </div>
-            <div className="text-[10px] text-blue-300/70 font-mono">/ 100</div>
+            <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Laporan Evaluasi Wawancara</h1>
+              <p className="text-blue-200 font-medium uppercase tracking-widest text-[10px] mt-1">
+                Powered by LLM-as-a-Judge · ConCISE Metric · STAR Detection
+              </p>
+            </div>
           </div>
-          <button
-            onClick={() => generateEvaluationReport(evaluation, cvText, jdText)}
-            className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all border border-white/20 flex items-center gap-1.5 text-xs font-bold"
-          >
-            <Download size={14} /> PDF
-          </button>
-          <button
-            onClick={onReset}
-            className="px-3 py-2 bg-white text-blue-900 rounded-xl hover:bg-slate-100 transition-all flex items-center gap-1.5 text-xs font-bold"
-          >
-            <RefreshCcw size={14} /> Ulang
-          </button>
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => generateEvaluationReport(evaluation, cvText, jdText)}
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all border border-white/20 flex items-center gap-2 text-sm font-bold"
+            >
+              <Download size={16} />
+              PDF
+            </button>
+            <button
+              onClick={onReset}
+              className="px-4 py-3 bg-white text-blue-900 rounded-xl hover:bg-slate-100 transition-all shadow-xl flex items-center gap-2 text-sm font-bold"
+            >
+              <RefreshCcw size={16} />
+              ULANG
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* VERDICT BADGE */}
-      <div className="flex items-center gap-3">
-        <div className={`px-4 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${verdictColor}`}>
-          {verdictLabel}
+        <div className="col-span-12 lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-[2rem] p-8 flex flex-col justify-center items-center text-center">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Skor Keseluruhan</span>
+          <div className={`text-6xl font-black tracking-tighter ${evaluation.overall_score >= 80 ? 'text-emerald-400' : evaluation.overall_score >= 60 ? 'text-blue-400' : evaluation.overall_score >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+            {evaluation.overall_score}
+          </div>
+          <div className="text-xs text-slate-500 font-mono mt-1">/ 100</div>
+          <div className={`mt-4 px-4 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${verdictColor}`}>
+            {verdictLabel}
+          </div>
         </div>
       </div>
 
       {/* OVERALL SUMMARY */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 bg-blue-500/20 border border-blue-500/30 rounded-xl flex items-center justify-center shrink-0">
             <Sparkles size={18} className="text-blue-400" />
@@ -185,6 +188,58 @@ export default function InterviewEvaluation({
           </div>
         </div>
       </div>
+
+      {/* FILLER AGGREGATE */}
+      {(() => {
+        const all = evaluation.qa_analysis.map(q => detectFillers(q.answer));
+        const totalFillers = all.reduce((s, r) => s + r.total, 0);
+        const worstIdx = all.reduce((best, r, i) => r.total > all[best].total ? i : best, 0);
+        const allWords: Record<string, number> = {};
+        all.forEach(r => r.found.forEach(f => { allWords[f.word] = (allWords[f.word] ?? 0) + f.count; }));
+        const topWords = Object.entries(allWords).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const overallLevel = totalFillers === 0 ? 'clean' : totalFillers <= evaluation.qa_analysis.length * 2 ? 'minimal' : totalFillers <= evaluation.qa_analysis.length * 5 ? 'moderate' : 'heavy';
+        const meta = fillerLevelMeta[overallLevel];
+        return (
+          <div className={`border rounded-2xl p-4 ${meta.bg} ${meta.border}`}>
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <span className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${meta.color}`}>
+                🗣 Analisis Filler Word
+              </span>
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${meta.color} ${meta.bg} ${meta.border}`}>
+                {totalFillers === 0 ? 'Bersih ✓' : `${totalFillers} total · ${meta.label}`}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-black/20 rounded-xl p-3 text-center">
+                <div className={`text-2xl font-black ${meta.color}`}>{totalFillers}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Total filler semua jawaban</div>
+              </div>
+              <div className="bg-black/20 rounded-xl p-3 text-center">
+                <div className={`text-2xl font-black ${meta.color}`}>{(totalFillers / evaluation.qa_analysis.length).toFixed(1)}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Rata-rata per jawaban</div>
+              </div>
+            </div>
+            {topWords.length > 0 && (
+              <div>
+                <p className="text-[10px] text-slate-500 mb-1.5">Filler paling sering dipakai:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {topWords.map(([word, count]) => (
+                    <span key={word} className="px-2 py-0.5 bg-black/25 rounded-full text-[10px] font-mono font-bold text-slate-300">
+                      &ldquo;{word}&rdquo; <span className="text-slate-500">×{count}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {totalFillers === 0 && (
+              <p className={`text-[11px] ${meta.color}`}>Tidak ada filler word terdeteksi di semua jawaban — komunikasi sangat bersih dan profesional.</p>
+            )}
+            {totalFillers > 0 && (
+              <p className={`text-[11px] mt-2 ${meta.color}`}>Jawaban #{worstIdx + 1} memiliki filler terbanyak ({all[worstIdx].total}×) — perlu perhatian lebih saat latihan.</p>
+            )}
+          </div>
+        );
+      })()}
 
       {/* TAB SWITCHER */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-1.5 inline-flex gap-1">
@@ -279,7 +334,7 @@ export default function InterviewEvaluation({
 function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
   if (!evaluation.qa_analysis || evaluation.qa_analysis.length === 0) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-12 text-center">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-12 text-center">
         <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
         <p className="text-slate-400">Tidak ada data percakapan yang dapat dianalisis.</p>
       </div>
@@ -299,8 +354,8 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
   return (
     <>
       {/* AGGREGATE METRICS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 lg:col-span-7 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-purple-500/20 border border-purple-500/30 rounded-xl flex items-center justify-center">
               <ListChecks size={18} className="text-purple-400" />
@@ -340,7 +395,7 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
           </div>
         </div>
 
-        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5">
+        <div className="col-span-12 lg:col-span-5 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-xl flex items-center justify-center">
               <Zap size={18} className="text-amber-400" />
@@ -399,8 +454,8 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
       </div>
 
       {/* STRENGTHS & WEAKNESSES */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="col-span-1 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 space-y-4">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 md:col-span-6 bg-emerald-500/5 border border-emerald-500/20 rounded-[2rem] p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
               <CheckCircle className="text-white" size={18} />
@@ -416,7 +471,7 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
             ))}
           </ul>
         </div>
-        <div className="col-span-1 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 space-y-4">
+        <div className="col-span-12 md:col-span-6 bg-amber-500/5 border border-amber-500/20 rounded-[2rem] p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
               <AlertTriangle className="text-white" size={18} />
@@ -435,7 +490,7 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
       </div>
 
       {/* FINAL RECOMMENDATION — ALERT STYLE */}
-      <div className="relative bg-gradient-to-br from-red-600 via-red-700 to-rose-800 border-2 border-red-400/60 rounded-2xl p-8 overflow-hidden shadow-2xl shadow-red-900/50">
+      <div className="relative bg-gradient-to-br from-red-600 via-red-700 to-rose-800 border-2 border-red-400/60 rounded-[2rem] p-8 overflow-hidden shadow-2xl shadow-red-900/50">
         {/* Pulsing background accent */}
         <motion.div
           animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -1039,7 +1094,7 @@ function ArchetypeCard({ archetype }: { archetype: CandidateArchetype }) {
   const Icon = styles.icon;
 
   return (
-    <div className={`relative bg-gradient-to-br ${styles.gradient} border-2 ${styles.border} rounded-2xl p-8 overflow-hidden shadow-2xl ${styles.shadow}`}>
+    <div className={`relative bg-gradient-to-br ${styles.gradient} border-2 ${styles.border} rounded-[2rem] p-8 overflow-hidden shadow-2xl ${styles.shadow}`}>
       {/* Pulsing glow */}
       <motion.div
         animate={{ opacity: [0.15, 0.3, 0.15] }}
@@ -1160,6 +1215,8 @@ function buildSitiExplanation(result: RetryResult, origRating: number): string {
 
 // =================== QA CARD ===================
 function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
+  const fillerResult = detectFillers(qa.answer);
+  const fillerMeta   = fillerLevelMeta[fillerResult.level];
   const [open, setOpen] = useState(false);
   const [innerTab, setInnerTab] = useState<'chat' | 'analysis' | 'coaching' | 'practice'>('chat');
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -1354,7 +1411,7 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
   ];
 
   return (
-    <div className={`bg-slate-900/40 border rounded-2xl overflow-hidden transition-all ${cardBorder}`}>
+    <div className={`bg-slate-900/40 border rounded-[2rem] overflow-hidden transition-all ${cardBorder}`}>
 
       {/* ── HEADER ── */}
       <button onClick={() => setOpen(!open)} className="w-full text-left p-5 hover:bg-slate-900/60 transition-colors group">
@@ -1368,6 +1425,9 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Pertanyaan #{index}</span>
               <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">STAR {qa.star.score}/4</span>
               <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 border border-purple-500/30 px-1.5 py-0.5 rounded">ConCISE {qa.concise.total}/50</span>
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${fillerMeta.color} ${fillerMeta.bg} ${fillerMeta.border}`}>
+                {fillerResult.total === 0 ? '✓ Bersih' : `⚠ ${fillerResult.total} filler`}
+              </span>
             </div>
             <p className={`text-sm leading-relaxed line-clamp-2 ${open ? 'text-white' : 'text-slate-300'}`}>
               {qa.question.length > 110 ? qa.question.slice(0, 110) + '…' : qa.question}
@@ -1496,6 +1556,31 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
                           })}
                         </div>
                       </div>
+
+                      {/* ── FILLER WORDS ── */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${fillerMeta.color}`}>
+                            <span>🗣</span> Filler Words
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${fillerMeta.color} ${fillerMeta.bg} ${fillerMeta.border}`}>
+                            {fillerResult.level === 'clean' ? 'Bersih' : `${fillerResult.total}× terdeteksi · ${fillerMeta.label}`}
+                          </span>
+                        </div>
+                        <div className={`rounded-xl p-3 border ${fillerMeta.bg} ${fillerMeta.border}`}>
+                          <p className={`text-[11px] leading-relaxed mb-2 ${fillerMeta.color}`}>{fillerMeta.text}</p>
+                          {fillerResult.found.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {fillerResult.found.map(f => (
+                                <span key={f.word} className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/20 rounded-full text-[10px] font-mono font-bold text-slate-300">
+                                  &ldquo;{f.word}&rdquo; <span className="text-slate-500">×{f.count}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                     </motion.div>
                   )}
 
@@ -1826,7 +1911,7 @@ function CVMatchView({ evaluation }: { evaluation: EvaluationData }) {
   return (
     <>
       {/* Match Score Header */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-8">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-8">
         <div className="flex items-center justify-between flex-wrap gap-6">
           <div>
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-1">Skor Kesesuaian</h3>
@@ -1843,7 +1928,7 @@ function CVMatchView({ evaluation }: { evaluation: EvaluationData }) {
       </div>
 
       {/* MATCHED SKILLS DEMONSTRATED */}
-      <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6">
+      <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-[2rem] p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
             <CheckCircle className="text-white" size={18} />
@@ -1867,8 +1952,8 @@ function CVMatchView({ evaluation }: { evaluation: EvaluationData }) {
       </div>
 
       {/* GAPS ADDRESSED */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="col-span-1 bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-12 md:col-span-6 bg-blue-500/5 border border-blue-500/20 rounded-[2rem] p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
               <Check className="text-white" size={18} />
@@ -1892,7 +1977,7 @@ function CVMatchView({ evaluation }: { evaluation: EvaluationData }) {
           )}
         </div>
 
-        <div className="col-span-1 bg-red-500/5 border border-red-500/20 rounded-2xl p-6">
+        <div className="col-span-12 md:col-span-6 bg-red-500/5 border border-red-500/20 rounded-[2rem] p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
               <X className="text-white" size={18} />
