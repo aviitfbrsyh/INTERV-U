@@ -1,17 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import InterviewSetup from '@/components/InterviewSetup';
 import LiveInterview from '@/components/LiveInterview';
 import InterviewEvaluation from '@/components/InterviewEvaluation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Sparkles, Shield, Cpu, Zap, Star } from 'lucide-react';
+import { ArrowRight, Sparkles, Shield, Cpu, Zap, Star, History, CheckCircle } from 'lucide-react';
 import { CrossMatchData } from '@/lib/cross-match';
 import { runEvaluation, EvaluationData } from '@/lib/evaluate';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveSession } from '@/lib/session-store';
 
 type AppState = 'landing' | 'setup' | 'interview' | 'evaluation';
 
+function extractField(text: string, keys: string[]): string {
+  for (const key of keys) {
+    const m = text.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`, 'i'));
+    if (m?.[1]?.trim()) return m[1].trim();
+  }
+  return text.split('\n').find(l => {
+    const t = l.trim();
+    return t.length > 2 && !t.startsWith('{') && !t.startsWith('"') && !t.startsWith('[');
+  })?.trim() ?? '';
+}
+
 export default function Home() {
+  const { user, loading: authLoading, signInWithGoogle, logout } = useAuth();
+  const router = useRouter();
   const [state, setState] = useState<AppState>('landing');
   const [cvText, setCvText] = useState('');
   const [jdText, setJdText] = useState('');
@@ -20,6 +36,29 @@ export default function Home() {
   const [prefetchedEvaluation, setPrefetchedEvaluation] = useState<EvaluationData | null>(null);
   const [isPrefetching, setIsPrefetching] = useState(false);
   const [prefetchError, setPrefetchError] = useState<string | null>(null);
+  const [savedToast, setSavedToast] = useState(false);
+  const savedRef = useRef(false);
+
+  // Auto-save to Firestore when evaluation is ready and user is logged in
+  useEffect(() => {
+    if (!prefetchedEvaluation || isPrefetching || !user || savedRef.current) return;
+    savedRef.current = true;
+    const jobTitle = extractField(jdText, ['role', 'title', 'position', 'job_title', 'posisi', 'jabatan']);
+    const candidateName = extractField(cvText, ['name', 'nama', 'full_name', 'fullName']);
+    saveSession({
+      userId: user.uid,
+      evaluation: prefetchedEvaluation,
+      cvText,
+      jdText,
+      history,
+      crossMatchData,
+      jobTitle,
+      candidateName,
+    }).then(() => {
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 4000);
+    }).catch(console.error);
+  }, [prefetchedEvaluation, isPrefetching, user, cvText, jdText, history, crossMatchData]);
 
   const handleStart = (cv: string, jd: string, matchData: CrossMatchData) => {
     setCvText(cv);
@@ -54,6 +93,7 @@ export default function Home() {
     setPrefetchedEvaluation(null);
     setPrefetchError(null);
     setIsPrefetching(false);
+    savedRef.current = false;
   };
 
   return (
@@ -82,7 +122,7 @@ export default function Home() {
                   </div>
                   <span className="text-xl font-bold tracking-tighter">interv<span className="text-blue-500">you</span></span>
                 </div>
-                
+
                 <div className="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-400">
                     <a href="#features" className="hover:text-white transition-colors">Fitur</a>
                     <a href="#how-it-works" className="hover:text-white transition-colors">Cara Kerja</a>
@@ -90,12 +130,33 @@ export default function Home() {
                     <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
                 </div>
 
-                <button 
-                  onClick={() => setState('setup')}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full hover:bg-slate-200 transition-all text-sm font-bold shadow-xl shadow-white/10"
-                >
-                  Mulai Sekarang <ArrowRight size={14} />
-                </button>
+                <div className="flex items-center gap-3">
+                  {user ? (
+                    <>
+                      <button
+                        onClick={() => router.push('/history')}
+                        className="hidden sm:flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors px-3 py-2 border border-white/10 rounded-xl"
+                      >
+                        <History size={14} /> Riwayat
+                      </button>
+                      <img src={user.photoURL ?? ''} alt="" className="w-8 h-8 rounded-full border border-white/20" />
+                      <button onClick={logout} className="text-xs text-slate-500 hover:text-white transition-colors hidden sm:block">Keluar</button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={signInWithGoogle}
+                      className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 text-white rounded-full hover:bg-white/20 transition-all text-sm font-bold"
+                    >
+                      Login
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setState('setup')}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full hover:bg-slate-200 transition-all text-sm font-bold shadow-xl shadow-white/10"
+                  >
+                    Mulai <ArrowRight size={14} />
+                  </button>
+                </div>
               </nav>
 
               {/* Hero Section */}
@@ -413,7 +474,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               className="py-12 px-4 min-h-screen flex flex-col"
             >
-                <nav className="max-w-7xl mx-auto py-8 flex items-center gap-2 mb-12 w-full">
+                <nav className="max-w-7xl mx-auto py-8 flex items-center justify-between mb-12 w-full">
                     <button onClick={() => setState('landing')} className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                             <Sparkles className="w-5 h-5 text-white" />
@@ -421,7 +482,29 @@ export default function Home() {
                         <span className="text-xl font-bold tracking-tighter">interv<span className="text-blue-500">you</span></span>
                         <span className="text-xs text-slate-500 ml-4 hidden sm:inline px-3 py-1 border border-white/10 rounded-full">Evaluation</span>
                     </button>
+                    {user && (
+                      <button
+                        onClick={() => router.push('/history')}
+                        className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors px-3 py-2 border border-white/10 rounded-xl"
+                      >
+                        <History size={14} /> Riwayat
+                      </button>
+                    )}
                 </nav>
+
+                {/* Saved toast */}
+                <AnimatePresence>
+                  {savedToast && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-emerald-950 border border-emerald-500/40 text-emerald-300 px-5 py-3 rounded-full shadow-2xl text-sm font-bold"
+                    >
+                      <CheckCircle size={16} /> Sesi tersimpan ke riwayatmu
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               <div className="flex-grow w-full">
                 <InterviewEvaluation
                   history={history}
