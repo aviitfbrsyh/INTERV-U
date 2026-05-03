@@ -7,6 +7,13 @@ import {
   Sparkles, ArrowLeft, Trophy, Calendar,
   Briefcase, ChevronRight, Loader2, Inbox,
 } from 'lucide-react';
+
+function getAvatar(name: string): { initials: string; bg: string } {
+  const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?';
+  const palette = ['#6366f1','#8b5cf6','#ec4899','#f43f5e','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#06b6d4'];
+  const bg = palette[name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % palette.length];
+  return { initials, bg };
+}
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserSessions, SavedSession } from '@/lib/session-store';
 import InterviewEvaluation from '@/components/InterviewEvaluation';
@@ -101,11 +108,11 @@ export default function HistoryPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <img
-              src={user.photoURL ?? ''}
-              alt={user.displayName ?? ''}
-              className="w-8 h-8 rounded-full border border-white/20"
-            />
+            {(() => { const a = getAvatar(user.displayName ?? user.email ?? '?'); return (
+              <div style={{ background: a.bg }} className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 select-none">
+                {a.initials}
+              </div>
+            ); })()}
             <span className="text-sm text-slate-400 hidden sm:inline">{user.displayName}</span>
             <button
               onClick={logout}
