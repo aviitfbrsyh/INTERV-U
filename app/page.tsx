@@ -86,6 +86,25 @@ export default function Home() {
     setState('evaluation');
   };
 
+  // Post-login: auto-redirect to setup if intent was set
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const intent = sessionStorage.getItem('loginIntent');
+    if (intent === 'setup') {
+      sessionStorage.removeItem('loginIntent');
+      setState('setup');
+    }
+  }, [authLoading, user]);
+
+  const handleMulai = () => {
+    if (user) {
+      setState('setup');
+    } else {
+      sessionStorage.setItem('loginIntent', 'setup');
+      router.push('/login');
+    }
+  };
+
   const handleReset = () => {
     setState('setup');
     setHistory('');
@@ -144,14 +163,14 @@ export default function Home() {
                     </>
                   ) : (
                     <button
-                      onClick={signInWithGoogle}
+                      onClick={() => router.push('/login')}
                       className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 text-white rounded-full hover:bg-white/20 transition-all text-sm font-bold"
                     >
                       Login
                     </button>
                   )}
                   <button
-                    onClick={() => setState('setup')}
+                    onClick={handleMulai}
                     className="flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-full hover:bg-slate-200 transition-all text-sm font-bold shadow-xl shadow-white/10"
                   >
                     Mulai <ArrowRight size={14} />
@@ -178,8 +197,8 @@ export default function Home() {
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center pt-10">
-                    <button 
-                      onClick={() => setState('setup')}
+                    <button
+                      onClick={handleMulai}
                       className="px-10 py-5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all shadow-2xl shadow-blue-900/40 flex items-center justify-center gap-3 active:scale-95"
                     >
                       Mulai Simulasi <ArrowRight size={20} />
@@ -364,7 +383,7 @@ export default function Home() {
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> Analisis CV Dasar</li>
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> Feedback Teks</li>
                         </ul>
-                        <button onClick={() => setState('setup')} className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">Pilih Gratis</button>
+                        <button onClick={handleMulai} className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">Pilih Gratis</button>
                     </div>
                     <div className="p-10 bg-blue-600 border border-blue-400/30 rounded-[2.5rem] flex flex-col relative overflow-hidden shadow-[0_0_50px_-12px_rgba(37,99,235,0.5)]">
                         <div className="absolute top-4 right-6 px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest text-white">Terpopuler</div>
@@ -376,7 +395,7 @@ export default function Home() {
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-white rounded-full"></div> Voice Persona Khusus</li>
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-white rounded-full"></div> Riwayat Sesi Tersimpan</li>
                         </ul>
-                        <button onClick={() => setState('setup')} className="w-full py-4 bg-white text-blue-600 hover:bg-slate-100 rounded-xl font-bold transition-all">Mulai Langganan</button>
+                        <button onClick={handleMulai} className="w-full py-4 bg-white text-blue-600 hover:bg-slate-100 rounded-xl font-bold transition-all">Mulai Langganan</button>
                     </div>
                     <div className="p-10 bg-white/5 border border-white/5 rounded-[2.5rem] flex flex-col">
                         <h4 className="text-xl font-bold mb-2">Elite</h4>
@@ -386,7 +405,7 @@ export default function Home() {
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> Semua Fitur Profesional</li>
                             <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> Prioritas Support 1-on-1</li>
                         </ul>
-                        <button onClick={() => setState('setup')} className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">Pilih Elite</button>
+                        <button onClick={handleMulai} className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">Pilih Elite</button>
                     </div>
                 </div>
               </section>
