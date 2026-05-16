@@ -81,7 +81,7 @@ export function CVForm({ data, onChange }: CVFormProps) {
             <Briefcase size={20} />
             <h3 className="font-bold uppercase tracking-widest text-sm">Pengalaman Kerja</h3>
           </div>
-          <button onClick={addExperience} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400">
+          <button onClick={addExperience} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer">
             <Plus size={16} />
           </button>
         </div>
@@ -138,7 +138,7 @@ export function CVForm({ data, onChange }: CVFormProps) {
             <GraduationCap size={20} />
             <h3 className="font-bold uppercase tracking-widest text-sm">Pendidikan</h3>
           </div>
-          <button onClick={() => onChange({...data, education: [...data.education, {degree: '', institution: '', year: ''}]})} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400">
+          <button onClick={() => onChange({...data, education: [...data.education, {degree: '', institution: '', year: ''}]})} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer">
             <Plus size={16} />
           </button>
         </div>
@@ -197,7 +197,7 @@ export function CVForm({ data, onChange }: CVFormProps) {
             <FolderOpen size={20} />
             <h3 className="font-bold uppercase tracking-widest text-sm">Proyek</h3>
           </div>
-          <button onClick={() => onChange({...data, projects: [...data.projects, {name: '', description: ''}]})} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400">
+          <button onClick={() => onChange({...data, projects: [...data.projects, {name: '', description: ''}]})} className="p-1 hover:bg-slate-800 rounded bg-slate-900 border border-slate-800 text-slate-400 cursor-pointer">
             <Plus size={16} />
           </button>
         </div>
@@ -247,7 +247,7 @@ export function CVForm({ data, onChange }: CVFormProps) {
           className="w-full bg-slate-800/30 border border-slate-800 rounded-lg p-3 text-sm h-32"
           placeholder="Daftar keahlian dipisah koma atau baris baru..."
           value={data.skills.join(', ')}
-          onChange={(e) => onChange({ ...data, skills: e.target.value.split(/[,|\n]/).map(s => s.trim()).filter(Boolean) })}
+          onChange={(e) => onChange({ ...data, skills: e.target.value.split(/[,\n]/).map(s => s.trim()).filter(Boolean) })}
         />
       </section>
 
@@ -261,7 +261,7 @@ export function CVForm({ data, onChange }: CVFormProps) {
           className="w-full bg-slate-800/30 border border-slate-800 rounded-lg p-3 text-sm h-24"
           placeholder="Daftar sertifikasi..."
           value={data.certifications.join(', ')}
-          onChange={(e) => onChange({ ...data, certifications: e.target.value.split(/[,|\n]/).map(s => s.trim()).filter(Boolean) })}
+          onChange={(e) => onChange({ ...data, certifications: e.target.value.split(/[,\n]/).map(s => s.trim()).filter(Boolean) })}
         />
       </section>
     </div>

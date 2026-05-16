@@ -7,9 +7,65 @@ import { extractCV, extractJD, CVData, JDData } from '@/lib/gemini-extraction';
 import { crossMatch, CrossMatchData } from '@/lib/cross-match';
 import { CVForm, JDForm } from '@/components/StructuredDataForm';
 
+export type InterviewMode = 'supportif' | 'profesional' | 'pressure';
+
 interface InterviewSetupProps {
-  onStart: (cvText: string, jdText: string, crossMatchData: CrossMatchData) => void;
+  onStart: (cvText: string, jdText: string, crossMatchData: CrossMatchData, mode: InterviewMode) => void;
 }
+
+const MODES: {
+  id: InterviewMode;
+  name: string;
+  persona: string;
+  role: string;
+  tagline: string;
+  traits: string[];
+  color: string;
+  colorMuted: string;
+  colorBorder: string;
+  colorText: string;
+  dot: string;
+}[] = [
+  {
+    id: 'supportif',
+    name: 'Supportif',
+    persona: 'Kak Rina',
+    role: 'HR Generalist · 3 Tahun',
+    tagline: 'Hangat, sabar, encouraging',
+    traits: ['Kasih hint kalau jawaban kurang', 'Validasi setiap jawaban bagus', 'Pace lambat & nyaman'],
+    color: '#10b981',
+    colorMuted: 'rgba(16,185,129,0.08)',
+    colorBorder: 'rgba(16,185,129,0.25)',
+    colorText: '#6ee7b7',
+    dot: 'bg-emerald-500',
+  },
+  {
+    id: 'profesional',
+    name: 'Profesional',
+    persona: 'Siti Rahayu',
+    role: 'Director of Talent · 20 Tahun',
+    tagline: 'Warm but firm — standar industri',
+    traits: ['Pertanyaan adaptif dari CV & JD', 'Tegas namun tetap empati', 'Gali jawaban lebih dalam'],
+    color: '#3b82f6',
+    colorMuted: 'rgba(59,130,246,0.08)',
+    colorBorder: 'rgba(59,130,246,0.25)',
+    colorText: '#93c5fd',
+    dot: 'bg-blue-500',
+  },
+  {
+    id: 'pressure',
+    name: 'Pressure Test',
+    persona: 'Pak Arief',
+    role: 'Director of People · 18 Tahun',
+    tagline: 'Skeptis, kritis, tanpa basa-basi',
+    traits: ['Potong jawaban klise langsung', 'Diam panjang setelah kamu jawab', 'Pertanyaan jebakan & challenge'],
+    color: '#ef4444',
+    colorMuted: 'rgba(239,68,68,0.08)',
+    colorBorder: 'rgba(239,68,68,0.25)',
+    colorText: '#fca5a5',
+    dot: 'bg-red-500',
+  },
+];
 
 type SetupStep = 'input' | 'review';
 
@@ -27,6 +83,8 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
   const [cvData, setCvData] = useState<CVData | null>(null);
   const [jdData, setJdData] = useState<JDData | null>(null);
   const [isCrossMatching, setIsCrossMatching] = useState(false);
+
+  const [interviewMode, setInterviewMode] = useState<InterviewMode>('profesional');
 
   const cvFileRef = useRef<HTMLInputElement>(null);
   const jdFileRef = useRef<HTMLInputElement>(null);
@@ -100,7 +158,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     setIsCrossMatching(true);
     try {
       const matchData = await crossMatch(finalCV, finalJD);
-      onStart(finalCV, finalJD, matchData);
+      onStart(finalCV, finalJD, matchData, interviewMode);
     } catch (err) {
       console.error('Cross-match analysis failed:', err);
       const fallback: CrossMatchData = {
@@ -111,7 +169,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
         focus_areas: [],
         summary: 'Tidak dapat melakukan analisis kesesuaian.',
       };
-      onStart(finalCV, finalJD, fallback);
+      onStart(finalCV, finalJD, fallback, interviewMode);
     } finally {
       setIsCrossMatching(false);
     }
@@ -327,6 +385,92 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                         </>
                     )}
                 </button>
+            </div>
+
+            {/* Mode Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="h-px flex-1 bg-slate-800/80" />
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Pilih Mode Wawancara</span>
+                <div className="h-px flex-1 bg-slate-800/80" />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                {MODES.map((m) => {
+                  const selected = interviewMode === m.id;
+                  return (
+                    <motion.button
+                      key={m.id}
+                      onClick={() => setInterviewMode(m.id)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                      className="relative text-left rounded-2xl p-5 transition-all duration-200 overflow-hidden"
+                      style={{
+                        background: selected ? m.colorMuted : 'rgba(255,255,255,0.02)',
+                        border: `1.5px solid ${selected ? m.color : 'rgba(255,255,255,0.06)'}`,
+                        boxShadow: selected ? `0 0 28px ${m.color}22, 0 0 0 1px ${m.color}15 inset` : 'none',
+                      }}
+                    >
+                      {selected && (
+                        <motion.div
+                          layoutId="mode-glow"
+                          className="absolute inset-0 rounded-2xl pointer-events-none"
+                          style={{ background: `radial-gradient(ellipse at 50% 0%, ${m.color}18, transparent 70%)` }}
+                        />
+                      )}
+
+                      <div className="relative z-10">
+                        {/* Top row: dot + recommended badge */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${m.dot}`} />
+                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: m.color }}>
+                              {m.name}
+                            </span>
+                          </div>
+                          {m.id === 'profesional' && (
+                            <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full"
+                              style={{ background: m.colorMuted, color: m.colorText, border: `1px solid ${m.colorBorder}` }}>
+                              Default
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Persona name */}
+                        <p className="text-base font-bold text-white leading-tight">{m.persona}</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5 mb-3">{m.role}</p>
+
+                        {/* Tagline */}
+                        <p className="text-xs leading-relaxed mb-3" style={{ color: m.colorText }}>
+                          {m.tagline}
+                        </p>
+
+                        {/* Traits */}
+                        <ul className="space-y-1.5">
+                          {m.traits.map((t) => (
+                            <li key={t} className="flex items-start gap-1.5">
+                              <span className="mt-[3px] shrink-0 w-1 h-1 rounded-full" style={{ background: m.color }} />
+                              <span className="text-[10px] text-slate-400 leading-snug">{t}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* Selected checkmark */}
+                        {selected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ background: m.color }}
+                          >
+                            <CheckCircle className="w-3 h-3 text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8 items-start">

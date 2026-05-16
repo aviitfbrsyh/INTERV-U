@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import Script from 'next/script';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LiquidGlassFilter } from '@/components/ui/LiquidGlassFilter';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body suppressHydrationWarning className="bg-black font-sans selection:bg-blue-500/30">
+        <LiquidGlassFilter />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

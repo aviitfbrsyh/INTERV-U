@@ -8,3 +8,7 @@ coverage/
 tsconfig.tsbuildinfo
 temp.txt
 *.tsbuildinfo
+
+# Claude plan files
+quizzical-*.md
+*-plan.md

@@ -1,7 +1,7 @@
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import {
   collection, addDoc, getDocs,
-  query, where, doc, getDoc, Timestamp,
+  query, where, doc, getDoc, deleteDoc, Timestamp,
 } from 'firebase/firestore';
 import { EvaluationData } from './evaluate';
 import { CrossMatchData } from './cross-match';
@@ -49,9 +49,21 @@ export async function getUserSessions(userId: string): Promise<SavedSession[]> {
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
+export async function deleteSession(sessionId: string): Promise<void> {
+  const currentUid = auth.currentUser?.uid;
+  if (!currentUid) throw new Error('Unauthorized: must be logged in to delete a session.');
+  const snap = await getDoc(doc(db, 'sessions', sessionId));
+  if (!snap.exists()) return;
+  if (snap.data().userId !== currentUid) throw new Error('Forbidden: cannot delete another user\'s session.');
+  await deleteDoc(doc(db, 'sessions', sessionId));
+}
+
 export async function getSession(sessionId: string): Promise<SavedSession | null> {
+  const currentUid = auth.currentUser?.uid;
+  if (!currentUid) throw new Error('Unauthorized: must be logged in to fetch a session.');
   const snap = await getDoc(doc(db, 'sessions', sessionId));
   if (!snap.exists()) return null;
+  if (snap.data().userId !== currentUid) throw new Error('Forbidden: cannot access another user\'s session.');
   return {
     id: snap.id,
     ...snap.data(),

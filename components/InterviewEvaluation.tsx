@@ -6,7 +6,7 @@ import {
   Trophy, Target, AlertTriangle, CheckCircle, RefreshCcw, Download,
   MessageSquare, User, Sparkles, Lightbulb, Zap, TrendingUp,
   FileSearch, ListChecks, X, Check, Volume2, Pause, Edit3,
-  Send, Loader2, MessageCircle, Mic, Square
+  Send, Loader2, MessageCircle, Mic, Square, Info
 } from 'lucide-react';
 import { CrossMatchData } from '@/lib/cross-match';
 import { runEvaluation, EvaluationData as EvaluationDataType, QAAnalysis as QAAnalysisType, CandidateArchetype as CandidateArchetypeType } from '@/lib/evaluate';
@@ -154,12 +154,13 @@ export default function InterviewEvaluation({
               <Download size={16} />
               PDF
             </button>
+
             <button
               onClick={onReset}
               className="px-4 py-3 bg-white text-blue-900 rounded-xl hover:bg-slate-100 transition-all shadow-xl flex items-center gap-2 text-sm font-bold"
             >
               <RefreshCcw size={16} />
-              ULANG
+              Ulang
             </button>
           </div>
         </div>
@@ -202,8 +203,9 @@ export default function InterviewEvaluation({
         return (
           <div className={`border rounded-2xl p-4 ${meta.bg} ${meta.border}`}>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-              <span className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${meta.color}`}>
+              <span className={`text-xs font-semibold flex items-center gap-1.5 ${meta.color}`}>
                 🗣 Analisis Filler Word
+                <FillerInfoPopover />
               </span>
               <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${meta.color} ${meta.bg} ${meta.border}`}>
                 {totalFillers === 0 ? 'Bersih ✓' : `${totalFillers} total · ${meta.label}`}
@@ -548,9 +550,8 @@ function CoachingChatPanel({
   const [error, setError] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<'text' | 'voice'>('text');
   const [liveActive, setLiveActive] = useState(false);
-  const [voicePersona, setVoicePersona] = useState<'santai' | 'profesional' | 'mock'>('santai');
+  const [voicePersona, setVoicePersona] = useState<'santai' | 'mock'>('santai');
   const [liveHistorySantai, setLiveHistorySantai] = useState<LiveTranscript[]>([]);
-  const [liveHistoryProfesional, setLiveHistoryProfesional] = useState<LiveTranscript[]>([]);
   const [liveHistoryMock, setLiveHistoryMock] = useState<LiveTranscript[]>([]);
   const [audioMap, setAudioMap] = useState<Record<number, string>>({});
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
@@ -562,6 +563,12 @@ function CoachingChatPanel({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending]);
+
+  // Reset history of the persona being switched AWAY from, so next session starts fresh
+  useEffect(() => {
+    setLiveHistorySantai([]);
+    setLiveHistoryMock([]);
+  }, [voicePersona]);
 
   const evaluationContext = `
 ==== DOKUMEN KANDIDAT ====
@@ -719,7 +726,7 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
                     <p className="text-blue-200 text-xs">Penasihat karir · Online</p>
                   </div>
                 </div>
-                <button onClick={onClose} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-white transition-colors">
+                <button onClick={onClose} className="w-9 h-9 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center text-white transition-colors cursor-pointer">
                   <X size={18} />
                 </button>
               </div>
@@ -754,19 +761,12 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
                   evaluationContext={evaluationContext}
                   persona={voicePersona}
                   previousTranscripts={
-                    voicePersona === 'profesional' ? liveHistoryProfesional
-                    : voicePersona === 'mock' ? liveHistoryMock
-                    : liveHistorySantai
+                    voicePersona === 'mock' ? liveHistoryMock : liveHistorySantai
                   }
                   onEnd={(newTranscripts, interrupted) => {
                     if (voicePersona === 'mock') {
-                      // Red End Call = intentional (interrupted=false) → fresh start
-                      // Unmount without End Call (interrupted=true) → save for continuation
                       if (interrupted) setLiveHistoryMock(prev => [...prev, ...newTranscripts]);
                       else setLiveHistoryMock([]);
-                    } else if (voicePersona === 'profesional') {
-                      if (interrupted) setLiveHistoryProfesional(prev => [...prev, ...newTranscripts]);
-                      else setLiveHistoryProfesional([]);
                     } else {
                       if (interrupted) setLiveHistorySantai(prev => [...prev, ...newTranscripts]);
                       else setLiveHistorySantai([]);
@@ -806,24 +806,6 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
                   </button>
 
                   <button
-                    onClick={() => setVoicePersona('profesional')}
-                    className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
-                      voicePersona === 'profesional'
-                        ? 'bg-amber-500/10 border-amber-500/50'
-                        : 'bg-slate-900/60 border-slate-800 hover:border-slate-600'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-xl mt-0.5">👔</span>
-                      <div>
-                        <p className="text-white font-bold text-xs">Profesional & Terstruktur</p>
-                        <p className="text-slate-400 text-[11px] mt-0.5 leading-relaxed">Konsultasi formal. Siti berbasis data, tegas, terstruktur — seperti debrief HR senior.</p>
-                      </div>
-                      {voicePersona === 'profesional' && <Check size={14} className="text-amber-400 ml-auto shrink-0 mt-0.5" />}
-                    </div>
-                  </button>
-
-                  <button
                     onClick={() => setVoicePersona('mock')}
                     className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
                       voicePersona === 'mock'
@@ -845,9 +827,7 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
                 <button
                   onClick={() => setLiveActive(true)}
                   className={`px-8 py-3.5 font-bold rounded-2xl shadow-xl transition-all active:scale-95 flex items-center gap-2 text-white ${
-                    voicePersona === 'profesional'
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-900/40'
-                      : voicePersona === 'mock'
+                    voicePersona === 'mock'
                       ? 'bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-500 hover:to-purple-600 shadow-violet-900/40'
                       : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 shadow-blue-900/40'
                   }`}
@@ -1213,6 +1193,136 @@ function buildSitiExplanation(result: RetryResult, origRating: number): string {
   return parts.join(' ');
 }
 
+// =================== FILLER INFO POPOVER ===================
+const FILLER_CATEGORIES = [
+  {
+    label: 'Vokal & Suara',
+    icon: '🎙',
+    color: 'text-blue-400',
+    border: 'border-blue-500/25',
+    bg: 'bg-blue-500/8',
+    pill: 'bg-blue-500/15 text-blue-300',
+    desc: 'Bunyi refleks saat otak sedang mencari kata — membuat kandidat terdengar ragu dan tidak siap.',
+    words: ['eh', 'um', 'hmm', 'eee', 'err', 'em'],
+  },
+  {
+    label: 'Kata Pengisi',
+    icon: '💬',
+    color: 'text-amber-400',
+    border: 'border-amber-500/25',
+    bg: 'bg-amber-500/8',
+    pill: 'bg-amber-500/15 text-amber-300',
+    desc: 'Kata tunggal tanpa nilai komunikasi — sering muncul sebagai jeda pikiran yang tidak disadari.',
+    words: ['anu', 'kayak', 'semacam', 'yaa'],
+  },
+  {
+    label: 'Frasa Informal',
+    icon: '🗣',
+    color: 'text-purple-400',
+    border: 'border-purple-500/25',
+    bg: 'bg-purple-500/8',
+    pill: 'bg-purple-500/15 text-purple-300',
+    desc: 'Frasa percakapan sehari-hari yang terdengar tidak profesional dalam konteks wawancara kerja.',
+    words: ['apa ya', 'gimana ya', 'jadi gini', 'gitu loh', 'ya kan', 'ya gitu', 'gitu deh'],
+  },
+];
+
+function FillerInfoPopover() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener('mousedown', handler);
+    return () => window.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-flex">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-400 transition-colors"
+        aria-label="Info filler word"
+      >
+        <Info size={13} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.97 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="absolute left-0 top-7 z-50 w-[520px] bg-[#0f1623] border border-white/10 rounded-2xl shadow-2xl shadow-black/70 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/8 bg-white/3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-500/15 border border-blue-500/30 rounded-xl flex items-center justify-center text-base">
+                  🎯
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-tight">Deteksi Filler Word</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">17 pola terdeteksi otomatis dari transkrip jawaban</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Why it matters */}
+            <div className="px-5 py-3.5 border-b border-white/8 bg-amber-500/5">
+              <p className="text-[11px] text-amber-200/80 leading-relaxed">
+                <span className="font-bold text-amber-300">Mengapa penting?</span>{' '}
+                Filler word yang berlebihan memberi kesan kurang percaya diri dan tidak terstruktur — dua hal yang langsung dinilai HR dalam 30 detik pertama wawancara.
+              </p>
+            </div>
+
+            {/* Categories — horizontal 3 col */}
+            <div className="grid grid-cols-3 gap-0 divide-x divide-white/8 px-0">
+              {FILLER_CATEGORIES.map(cat => (
+                <div key={cat.label} className={`p-4 ${cat.bg}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base leading-none">{cat.icon}</span>
+                    <span className={`text-[11px] font-bold ${cat.color}`}>{cat.label}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed mb-3">{cat.desc}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {cat.words.map(w => (
+                      <span
+                        key={w}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${cat.pill}`}
+                      >
+                        {w}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer tip */}
+            <div className="px-5 py-3 border-t border-white/8 bg-white/2 flex items-center gap-2">
+              <CheckCircle size={12} className="text-emerald-400 shrink-0" />
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                Targetkan <span className="text-emerald-400 font-semibold">0–2 filler</span> per jawaban untuk komunikasi yang terdengar bersih dan profesional.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // =================== QA CARD ===================
 function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
   const fillerResult = detectFillers(qa.answer);
@@ -1414,7 +1524,7 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
     <div className={`bg-slate-900/40 border rounded-[2rem] overflow-hidden transition-all ${cardBorder}`}>
 
       {/* ── HEADER ── */}
-      <button onClick={() => setOpen(!open)} className="w-full text-left p-5 hover:bg-slate-900/60 transition-colors group">
+      <button onClick={() => setOpen(!open)} className="w-full text-left p-5 hover:bg-slate-900/60 transition-colors group cursor-pointer">
         <div className="flex items-start gap-4">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-black text-lg transition-all ${
             open ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700'
@@ -1560,8 +1670,9 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
                       {/* ── FILLER WORDS ── */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${fillerMeta.color}`}>
+                          <span className={`text-xs font-semibold flex items-center gap-1.5 ${fillerMeta.color}`}>
                             <span>🗣</span> Filler Words
+                            <FillerInfoPopover />
                           </span>
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${fillerMeta.color} ${fillerMeta.bg} ${fillerMeta.border}`}>
                             {fillerResult.level === 'clean' ? 'Bersih' : `${fillerResult.total}× terdeteksi · ${fillerMeta.label}`}
