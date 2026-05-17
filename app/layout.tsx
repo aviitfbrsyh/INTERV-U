@@ -17,6 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${playfair.variable}`}>
       <head>
+        {/* Preload video so it's cached before landing page renders */}
+        <link rel="preload" href="/untitled_Export_2026-05-14_07-44-09.mp4" as="video" type="video/mp4" />
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{

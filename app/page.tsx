@@ -160,7 +160,10 @@ export default function Home() {
   return (
     <main style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: state !== 'landing' ? '#0a0a0f' : 'transparent' }}>
 
-      {state === 'landing' && <VideoBackground src="/untitled_Export_2026-05-14_07-44-09.mp4" crossfade={1.8} />}
+      {/* Always mounted so video stays loaded in memory — hidden when not on landing */}
+      <div style={{ opacity: state === 'landing' ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: 'none' }}>
+        <VideoBackground src="/untitled_Export_2026-05-14_07-44-09.mp4" crossfade={1.8} />
+      </div>
 
       {state !== 'landing' && (
         <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
