@@ -1,16 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
-
-let aiInstance: GoogleGenAI | null = null;
-
-function getAI() {
-  if (!aiInstance) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) throw new Error('Gemini API key is not configured.');
-    aiInstance = new GoogleGenAI({ apiKey });
-  }
-  return aiInstance;
-}
-
 function pcmToWav(pcmData: Uint8Array, sampleRate = 24000, channels = 1, bitDepth = 16): Blob {
   const byteRate = sampleRate * channels * (bitDepth / 8);
   const blockAlign = channels * (bitDepth / 8);
@@ -46,59 +33,44 @@ export async function generateSitiHighlight(
   suggestion: string,
   hack: string
 ): Promise<string> {
-  const ai = getAI();
-
-  const prompt = `Kamu adalah Siti Rahayu — HR Director 20 tahun, ngomongnya blak-blakan kayak kakak senior yang beneran peduli. Kamu baru dengerin jawaban kandidat dan langsung mau kasih feedback jujur dari hati. INI AKAN DIBACAIN KERAS, jadi tulis kayak kamu lagi ngomong langsung, bukan nulis laporan.
-
-GAYA BICARA (WAJIB IKUTI):
-- Pakai "kamu", jangan "Anda"
-- Boleh mulai dengan ekspresi reaksi yang natural: "Oke jadi...", "Nah ini...", "Hmm, jujur ya...", "Hei, dengerin dulu ya...", "Ya ampun...", "Wah, lumayan nih..." — sesuaikan reaksi dengan kualitas jawaban
-- Boleh ekspresif: kalau jawabannya bagus bilang apa yang bikin kamu terkesan, kalau kurang bilang apa yang bikin kamu geleng-geleng
-- Nggak bertele-tele, tapi juga nggak kering
-- Boleh pakai: "nah", "jadi", "tuh", "oke", "beneran", "makanya", "justru itu", "serius deh"
-
-STRUKTUR (100–130 kata, ngalir natural kayak lagi ngomong):
-Buka dengan reaksi jujur terhadap jawaban — satu kalimat yang langsung nunjukin kamu dengerin beneran. Sebutin 1-2 hal konkret yang perlu diperbaiki dan kenapa itu penting buat HR. Kasih 1-2 contoh frasa atau cara ngomong yang lebih kuat yang bisa langsung dipakai. Tutup dengan satu kalimat pendek yang nge-push mereka, bisa tegas, bisa menyemangati, tergantung konteks.
-
-DATA:
-Pertanyaan: ${question}
-Jawaban kandidat: ${userAnswer}
-Saran perbaikan: ${suggestion}
-Hack kunci: ${hack}
-
-Langsung mulai, jangan perkenalkan diri:`;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
+  const res = await fetch('/api/coaching', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'highlight',
+      question,
+      userAnswer,
+      suggestion,
+      hack,
+    }),
   });
 
-  return (response.text || '').trim();
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Gagal menghasilkan highlight.');
+  }
+
+  const data = await res.json();
+  return (data.text || '').trim();
 }
 
 export async function generateSitiSpeech(text: string): Promise<string> {
-  const ai = getAI();
-
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-tts",
-    contents: text,
-    config: {
-      responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName: 'Kore',
-          },
-        },
-      },
-    } as Record<string, unknown>,
+  const res = await fetch('/api/coaching', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'speech',
+      text,
+    }),
   });
 
-  const part = response.candidates?.[0]?.content?.parts?.[0];
-  const audioData = (part as { inlineData?: { data?: string; mimeType?: string } })?.inlineData?.data;
-  const mimeType = (part as { inlineData?: { data?: string; mimeType?: string } })?.inlineData?.mimeType || 'audio/wav';
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Gagal menghasilkan suara Siti.');
+  }
 
-  if (!audioData) throw new Error('Tidak ada data audio yang diterima dari Gemini.');
+  const { audioData, mimeType } = await res.json();
+  if (!audioData) throw new Error('Tidak ada data audio yang diterima dari server.');
 
   const audioBytes = atob(audioData);
   const audioArray = new Uint8Array(audioBytes.length);

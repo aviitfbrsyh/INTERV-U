@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
       crossMatchData?: CrossMatchData | null;
     };
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const rawKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+    const apiKey = rawKey.replace(/[^\x20-\x7E]/g, '').trim().replace(/^["']|["']$/g, '');
     if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
 
     const ai = new GoogleGenAI({ apiKey });

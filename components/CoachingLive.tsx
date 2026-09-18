@@ -72,15 +72,19 @@ export default function CoachingLive({ evaluationContext, previousTranscripts, o
       setStatus('connecting');
 
       try {
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-        if (!apiKey) throw new Error('API key tidak ditemukan.');
-
-        const ai = new GoogleGenAI({ apiKey });
         const mgr = new AudioManager(24000);
-        await mgr.initialize();
+        const [tokenRes] = await Promise.all([
+          fetch('/api/live-token'),
+          mgr.initialize(),
+        ]);
+
+        if (!tokenRes.ok) throw new Error('Gagal mendapatkan token koneksi. Coba lagi.');
+        const { token } = await tokenRes.json();
+        if (!token) throw new Error('Token koneksi tidak valid.');
 
         if (cancelled) { mgr.close(); return; }
 
+        const ai = new GoogleGenAI({ apiKey: token, httpOptions: { apiVersion: 'v1alpha' } });
         audioManager.current = mgr;
 
         const historyBlock = previousTranscripts.length > 0 ? `
