@@ -40,11 +40,18 @@ export default function InterviewEvaluation({
   prefetchedEvaluation, isPrefetching, prefetchError,
 }: InterviewEvaluationProps) {
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(prefetchedEvaluation ?? null);
-  const [loading, setLoading] = useState(prefetchedEvaluation ? false : true);
+  // Derive loading state directly from props so it's always in sync:
+  // - If we already have data → not loading
+  // - If parent is currently fetching → loading
+  // - Otherwise → not loading (will fetch locally via useEffect)
+  const [loading, setLoading] = useState(
+    prefetchedEvaluation ? false : (isPrefetching ? true : !prefetchError)
+  );
   const [error, setError] = useState<string | null>(prefetchError ?? null);
   const [activeTab, setActiveTab] = useState<'interview' | 'cvmatch'>('interview');
   const [chatOpen, setChatOpen] = useState(false);
 
+  // Keep in sync with parent prefetch state changes
   useEffect(() => {
     if (prefetchedEvaluation) {
       setEvaluation(prefetchedEvaluation);
@@ -58,14 +65,19 @@ export default function InterviewEvaluation({
       return;
     }
     if (isPrefetching) {
+      // Parent is still fetching — show loading
       setLoading(true);
       return;
     }
 
+    // isPrefetching just became false with no result and no error
+    // Means parent passed no data — try fetching ourselves
     const generateEvaluation = async () => {
+      setLoading(true);
       try {
         const result = await runEvaluation(history, cvText, jdText, crossMatchData);
         setEvaluation(result);
+        setError(null);
       } catch (err: any) {
         console.error(err);
         setError(err?.message || 'Terjadi kesalahan saat membuat evaluasi.');

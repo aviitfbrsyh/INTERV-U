@@ -4,9 +4,23 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const WebpackPolyfillPath = path.resolve(__dirname, 'lib/empty-fetch-polyfill.js');
+const TurboPolyfillPath = './lib/empty-fetch-polyfill.js';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'motion',
+      'motion/react',
+      '@react-three/drei',
+      '@react-three/fiber',
+      'three',
+      'firebase',
+      '@google/genai'
+    ],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -28,14 +42,14 @@ const nextConfig: NextConfig = {
   transpilePackages: ['motion'],
   turbopack: {
     resolveAlias: {
-      'isomorphic-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'node-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'whatwg-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'cross-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'isomorphic-unfetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'unfetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'isomorphic-form-data': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-      'fetch-retry': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
+      'isomorphic-fetch': TurboPolyfillPath,
+      'node-fetch': TurboPolyfillPath,
+      'whatwg-fetch': TurboPolyfillPath,
+      'cross-fetch': TurboPolyfillPath,
+      'isomorphic-unfetch': TurboPolyfillPath,
+      'unfetch': TurboPolyfillPath,
+      'isomorphic-form-data': TurboPolyfillPath,
+      'fetch-retry': TurboPolyfillPath,
     },
   },
   webpack: (config, {dev, isServer}) => {
@@ -49,14 +63,14 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
-        'isomorphic-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'node-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'whatwg-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'cross-fetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'isomorphic-unfetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'unfetch': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'isomorphic-form-data': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
-        'fetch-retry': path.resolve(__dirname, 'lib/empty-fetch-polyfill.js'),
+        'isomorphic-fetch': WebpackPolyfillPath,
+        'node-fetch': WebpackPolyfillPath,
+        'whatwg-fetch': WebpackPolyfillPath,
+        'cross-fetch': WebpackPolyfillPath,
+        'isomorphic-unfetch': WebpackPolyfillPath,
+        'unfetch': WebpackPolyfillPath,
+        'isomorphic-form-data': WebpackPolyfillPath,
+        'fetch-retry': WebpackPolyfillPath,
       };
     }
     return config;

@@ -3,17 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { GlassButton } from '@/components/ui/GlassButton';
-import { GlassBadge } from '@/components/ui/GlassBadge';
-import { VideoBackground } from '@/components/ui/VideoBackground';
 
 const SF = `-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif`;
 
 const GoogleIcon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden>
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden style={{ flexShrink: 0 }}>
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -30,6 +26,106 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && user) router.replace('/');
   }, [user, loading, router]);
+
+  // Background Canvas Effect (Interactive Particles)
+  useEffect(() => {
+    const canvas = document.getElementById('login-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let W: number, H: number;
+    const particles: any[] = [];
+    let animationId: number;
+
+    function resize() {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Create particles
+    for (let i = 0; i < 90; i++) {
+      particles.push({
+        x: Math.random() * (window.innerWidth || 1200),
+        y: Math.random() * (window.innerHeight || 800),
+        r: Math.random() * 1.5 + 0.4,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        alpha: Math.random() * 0.45 + 0.1,
+        hue: Math.random() > 0.5 ? 210 : 265,
+      });
+    }
+
+    let mx = -999, my = -999;
+    const onMouseMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; };
+    window.addEventListener('mousemove', onMouseMove);
+
+    function draw(t: number) {
+      if (!canvas.offsetParent && canvas.offsetHeight === 0) {
+        animationId = requestAnimationFrame(draw);
+        return;
+      }
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      ctx!.clearRect(0, 0, W, H);
+
+      // Mouse glow
+      if (mx !== -999) {
+        const g2 = ctx!.createRadialGradient(mx, my, 0, mx, my, 220);
+        g2.addColorStop(0, 'rgba(90,140,255,0.04)');
+        g2.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.fillStyle = g2;
+        ctx!.fillRect(0, 0, W, H);
+      }
+
+      particles.forEach(p => {
+        if (mx !== -999) {
+          const dx = mx - p.x, dy = my - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 180) {
+            p.vx += dx * 0.000045; // attract to cursor
+            p.vy += dy * 0.000045;
+          }
+        }
+        p.vx *= 0.994; p.vy *= 0.994;
+        p.x += p.vx; p.y += p.vy;
+        
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+        const pulse = 0.5 + 0.5 * Math.sin(t * 0.0008 + p.x * 0.01);
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx!.fillStyle = `hsla(${p.hue}, 80%, 75%, ${p.alpha * pulse})`;
+        ctx!.fill();
+      });
+
+      // Connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 85) {
+            ctx!.beginPath();
+            ctx!.moveTo(particles[i].x, particles[i].y);
+            ctx!.lineTo(particles[j].x, particles[j].y);
+            ctx!.strokeStyle = `rgba(110,150,255,${0.055 * (1 - d / 85)})`;
+            ctx!.lineWidth = 0.5;
+            ctx!.stroke();
+          }
+        }
+      }
+      animationId = requestAnimationFrame(draw);
+    }
+    animationId = requestAnimationFrame(draw);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMouseMove);
+      cancelAnimationFrame(animationId);
+    };
+  }, []);
 
   const handleLogin = async () => {
     if (signingIn) return;
@@ -55,172 +151,279 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SF }}>
-        <VideoBackground src="/untitled_Export_2026-05-14_07-44-09.mp4" />
+      <div style={{
+        minHeight: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: SF,
+        background: '#060608',
+        backgroundImage: `
+          radial-gradient(ellipse 80% 60% at 50% 0%, rgba(90, 120, 255, 0.12) 0%, transparent 70%),
+          radial-gradient(ellipse 60% 40% at 80% 80%, rgba(120, 60, 200, 0.08) 0%, transparent 60%)
+        `
+      }}>
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}} />
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-          style={{ position: 'relative', zIndex: 2, width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.35)', borderTopColor: 'rgba(255,255,255,0.85)' }}
+          style={{ position: 'relative', zIndex: 2, width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.15)', borderTopColor: 'rgba(255,255,255,0.85)' }}
         />
       </div>
     );
   }
 
   return (
-    <main style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SF }}>
+    <main style={{
+      minHeight: '100vh',
+      position: 'relative',
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: SF,
+      background: '#060608',
+      backgroundImage: `
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(90, 120, 255, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(120, 60, 200, 0.08) 0%, transparent 60%)
+      `
+    }}>
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}} />
 
-      {/* Seamless looping video */}
-      <VideoBackground src="/untitled_Export_2026-05-14_07-44-09.mp4" crossfade={1.8} />
+      {/* Interactive Particles Background Canvas */}
+      <canvas id="login-canvas" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }} />
 
-      {/* Vignette */}
-      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'radial-gradient(ellipse at center, transparent 45%, rgba(130,110,155,0.16) 100%)', pointerEvents: 'none' }} />
+      {/* Vignette Overlay */}
+      <div aria-hidden style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%)', pointerEvents: 'none' }} />
 
-      {/* Content */}
+      {/* ── Sleek Apple Back button placed at the top-left corner of viewport (Filled Style) ── */}
       <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.4 }}
+        style={{ position: 'absolute', top: 24, left: 24, zIndex: 10 }}
+      >
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255, 255, 255, 0.95)',
+            border: 'none',
+            borderRadius: 50, padding: '7px 14px 7px 10px',
+            color: '#060608',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            fontFamily: SF, transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            letterSpacing: '-0.01em',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.35)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.25)';
+          }}
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} />
+          Kembali
+        </button>
+      </motion.div>
+
+      {/* Content Container */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 360, margin: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 380, margin: '0 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}
       >
 
-        {/* ── Logo pill ── */}
+        {/* ── MacBook Window Design Login Card ── */}
         <motion.div
-          initial={{ opacity: 0, y: -12, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <GlassCard tint={0.28} blur={6} radius={9999}>
-            {/* flex goes INSIDE content, not on GlassCard */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 18px 7px 8px' }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                background: 'linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(37,99,235,0.40)',
-              }}>
-                <Sparkles size={15} color="#fff" />
-              </div>
-              <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.025em', color: 'rgba(18,18,30,0.85)', whiteSpace: 'nowrap' }}>
-                interv<span style={{ color: '#2563eb' }}>you</span>
-              </span>
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        {/* ── Main card ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           style={{ width: '100%' }}
         >
-          <GlassCard tint={0.24} blur={8} radius={28} strong>
-            <div style={{ padding: '32px 28px 28px' }}>
-
-              {/* Icon */}
-              <motion.div
-                initial={{ scale: 0.75, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.20, type: 'spring', stiffness: 280, damping: 20 }}
-                style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}
-              >
-                <GlassCard tint={0.32} blur={4} radius={18}>
-                  <div style={{ width: 58, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
-                    🎯
-                  </div>
-                </GlassCard>
-              </motion.div>
-
-              {/* Heading */}
-              <motion.h1
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.26 }}
-                style={{ fontFamily: SF, fontSize: 22, fontWeight: 700, letterSpacing: '-0.030em', color: 'rgba(18,18,30,0.90)', textAlign: 'center', margin: '0 0 8px' }}
-              >
-                Masuk ke Intervyou
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.30 }}
-                style={{ fontFamily: SF, fontSize: 13, color: 'rgba(18,18,30,0.48)', lineHeight: 1.55, textAlign: 'center', margin: '0 0 26px', letterSpacing: '-0.010em' }}
-              >
-                Simpan riwayat sesi interview kamu<br />dan akses dari mana saja.
-              </motion.p>
-
-              {/* Error */}
-              <AnimatePresence>
-                {loginError && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.22 }}
-                    style={{ overflow: 'hidden', marginBottom: 14 }}
-                  >
-                    <GlassCard tint={0.12} blur={4} radius={12}>
-                      <div style={{ padding: '10px 14px' }}>
-                        <p style={{ fontFamily: SF, fontSize: 12, color: 'rgba(160,20,20,0.85)', margin: 0, letterSpacing: '-0.008em' }}>
-                          {loginError}
-                        </p>
-                      </div>
-                    </GlassCard>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Google button */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.34 }}
-              >
-                <GlassButton
-                  size="lg"
-                  fullWidth
-                  loading={signingIn}
-                  icon={<GoogleIcon />}
-                  theme="light"
-                  onClick={handleLogin}
-                  style={{ fontFamily: SF, letterSpacing: '-0.015em' }}
-                >
-                  {signingIn ? 'Menghubungkan...' : 'Masuk dengan Google'}
-                </GlassButton>
-              </motion.div>
-
-              {/* Fine print */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.42 }}
-                style={{ fontFamily: SF, fontSize: 11, color: 'rgba(18,18,30,0.28)', textAlign: 'center', margin: '18px 0 0', lineHeight: 1.55, letterSpacing: '-0.005em' }}
-              >
-                Dengan masuk, kamu menyetujui penyimpanan data sesi wawancara untuk riwayat pribadimu.
-              </motion.p>
-
+          <div style={{
+            width: '100%',
+            background: 'rgba(18, 18, 28, 0.65)',
+            border: '1px solid rgba(255, 255, 255, 0.09)',
+            borderRadius: 22,
+            backdropFilter: 'blur(28px) saturate(190%)',
+            boxShadow: '0 30px 65px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            padding: '20px 28px 28px',
+            position: 'relative'
+          }}>
+            
+            {/* macOS window traffic dots */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
+              <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FF5F56', border: '0.5px solid rgba(0,0,0,0.15)' }} />
+              <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FFBD2E', border: '0.5px solid rgba(0,0,0,0.15)' }} />
+              <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#27C93F', border: '0.5px solid rgba(0,0,0,0.15)' }} />
             </div>
-          </GlassCard>
+
+            {/* Glowing App Logo Icon */}
+            <motion.div
+              initial={{ scale: 0.82, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.18, type: 'spring', stiffness: 260, damping: 18 }}
+              style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}
+            >
+              <div style={{
+                width: 56, height: 56, borderRadius: 16,
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(124, 58, 237, 0.18) 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.14)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)'
+              }}>
+                <Sparkles size={24} color="#93c5fd" />
+              </div>
+            </motion.div>
+
+            {/* Heading */}
+            <motion.h1
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22 }}
+              style={{ fontFamily: SF, fontSize: 21, fontWeight: 700, letterSpacing: '-0.025em', color: '#fff', textAlign: 'center', margin: '0 0 6px' }}
+            >
+              Masuk ke IntervYou
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.26 }}
+              style={{ fontFamily: SF, fontSize: 13, color: 'rgba(255, 255, 255, 0.48)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 24px', letterSpacing: '-0.01em' }}
+            >
+              Simpan riwayat sesi interview kamu<br />dan akses dari mana saja.
+            </motion.p>
+
+            {/* Error Message */}
+            <AnimatePresence>
+              {loginError && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ overflow: 'hidden', marginBottom: 14 }}
+                >
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1px solid rgba(239, 68, 68, 0.22)'
+                  }}>
+                    <p style={{ fontFamily: SF, fontSize: 12, color: '#fca5a5', margin: 0, letterSpacing: '-0.005em', lineHeight: 1.4 }}>
+                      {loginError}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Premium Apple-Vibe Google login button */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <button
+                onClick={handleLogin}
+                disabled={signingIn}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  width: '100%', padding: '13px', borderRadius: 12,
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  fontFamily: SF, cursor: signingIn ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  letterSpacing: '-0.01em'
+                }}
+                onMouseEnter={e => {
+                  if (!signingIn) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.14)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.25)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!signingIn) {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                  }
+                }}
+              >
+                {signingIn ? (
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%',
+                    border: '2px solid rgba(255,255,255,0.25)',
+                    borderTopColor: '#fff',
+                    animation: 'spin 0.8s linear infinite'
+                  }} />
+                ) : (
+                  <>
+                    <GoogleIcon />
+                    <span>Masuk dengan Google</span>
+                  </>
+                )}
+              </button>
+            </motion.div>
+
+            {/* Fine Print */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.36 }}
+              style={{ fontFamily: SF, fontSize: 11, color: 'rgba(255, 255, 255, 0.28)', textAlign: 'center', margin: '18px 0 0', lineHeight: 1.5, letterSpacing: '-0.005em' }}
+            >
+              Dengan masuk, kamu menyetujui penyimpanan data sesi wawancara untuk riwayat pribadimu.
+            </motion.p>
+
+          </div>
         </motion.div>
 
-        {/* ── Feature pills ── */}
+        {/* ── Feature Pills below Card ── */}
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.46 }}
-          style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}
+          transition={{ delay: 0.4 }}
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}
         >
           {['AI Interviewer', 'Evaluasi Instan', 'Coaching Personal'].map((label, i) => (
             <motion.div
               key={label}
-              initial={{ opacity: 0, scale: 0.86 }}
+              initial={{ opacity: 0, scale: 0.88 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.48 + i * 0.06 }}
+              transition={{ delay: 0.42 + i * 0.05 }}
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.07)',
+                borderRadius: 50,
+                padding: '6px 14px',
+                color: 'rgba(255, 255, 255, 0.55)',
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: '-0.01em',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+              }}
             >
-              <GlassBadge theme="light" style={{ fontFamily: SF }}>
-                {label}
-              </GlassBadge>
+              {label}
             </motion.div>
           ))}
         </motion.div>

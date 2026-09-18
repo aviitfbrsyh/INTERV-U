@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
 import { CrossMatchData } from '@/lib/cross-match';
 
+export const maxDuration = 60;
+
 async function callWithRetry(fn: () => Promise<any>, retries = 3, delayMs = 5000): Promise<any> {
   for (let i = 0; i < retries; i++) {
     try {

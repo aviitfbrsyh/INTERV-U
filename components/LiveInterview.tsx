@@ -7,6 +7,10 @@ import { GoogleGenAI, LiveServerMessage, Modality, StartSensitivity, EndSensitiv
 import { AudioManager } from '@/lib/audio-manager';
 import { CrossMatchData } from '@/lib/cross-match';
 import { InterviewMode } from '@/components/InterviewSetup';
+import AmbientBackground from '@/components/AmbientBackground';
+import dynamic from 'next/dynamic';
+
+const VoiceBlob = dynamic(() => import('@/components/VoiceBlob'), { ssr: false });
 
 interface LiveInterviewProps {
   cvText: string;
@@ -20,6 +24,8 @@ const MODE_CONFIG = {
   supportif: {
     label: 'Supportif',
     persona: 'Kak Rina',
+    avatar: '/INTERRINA.png',
+    glow: 'rgba(14, 165, 233, 0.22)',
     dot: '#10b981',
     badge: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
     voice: 'Zephyr', // cheerful, upbeat female
@@ -27,6 +33,8 @@ const MODE_CONFIG = {
   profesional: {
     label: 'Profesional',
     persona: 'Siti Rahayu',
+    avatar: '/INTERSITI.png',
+    glow: 'rgba(167, 139, 250, 0.22)',
     dot: '#3b82f6',
     badge: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
     voice: 'Aoede', // professional female
@@ -34,28 +42,124 @@ const MODE_CONFIG = {
   pressure: {
     label: 'Pressure Test',
     persona: 'Pak Arief',
+    avatar: '/interarif.png',
+    glow: 'rgba(220, 38, 38, 0.22)',
     dot: '#ef4444',
     badge: 'bg-red-500/10 border-red-500/20 text-red-400',
     voice: 'Charon', // deep, stern male
   },
 } as const;
 
+const GLASS_CARD = 'rounded-2xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-md';
+
+function computeRms(base64: string): number {
+  const raw = atob(base64);
+  const total = Math.floor(raw.length / 2);
+  if (total === 0) return 0;
+  const step = Math.max(1, Math.floor(total / 256));
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < total; i += step) {
+    const lo = raw.charCodeAt(i * 2) & 0xff;
+    const hi = raw.charCodeAt(i * 2 + 1) & 0xff;
+    let s = lo | (hi << 8);
+    if (s > 32767) s -= 65536;
+    const n = s / 32768;
+    sum += n * n;
+    count++;
+  }
+  return count > 0 ? Math.sqrt(sum / count) : 0;
+}
+
+function extractJobTitle(jdText: string): string {
+  for (const key of ['role', 'title', 'position', 'job_title', 'posisi', 'jabatan']) {
+    const match = jdText.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`, 'i'));
+    if (match?.[1]?.trim()) return match[1].trim();
+  }
+  const line = jdText.split('\n').find((l) => {
+    const t = l.trim();
+    return t.length > 2 && !t.startsWith('{') && !t.startsWith('"') && !t.startsWith('[');
+  });
+  return line?.trim().slice(0, 64) || 'Posisi Target';
+}
+
 export default function LiveInterview({ cvText, jdText, crossMatchData, interviewMode = 'profesional', onEnd }: LiveInterviewProps) {
   const [status, setStatus] = useState<'connecting' | 'active' | 'ending'>('connecting');
   const [isMuted, setIsMuted] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const [transcriptions, setTranscriptions] = useState<{ role: string, text: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   // Incrementing this triggers a reconnection attempt (used by retry button)
   const [retryCount, setRetryCount] = useState(0);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (status !== 'active') {
+      setElapsedSeconds(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setElapsedSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  // UI only — sync speaking indicators with real audio playback + mic level
+  useEffect(() => {
+    if (status !== 'active') {
+      aiPlaybackActiveRef.current = false;
+      setIsAiSpeaking(false);
+      setIsUserSpeaking(false);
+      return;
+    }
+    let frame = 0;
+    const tick = () => {
+      const now = performance.now();
+      const playback = audioManager.current?.isPlaybackActive() ?? false;
+      aiPlaybackActiveRef.current = playback;
+
+      const aiActive = playback || now - lastAiChunk.current < 1500;
+      const sinceUser = now - lastUserChunk.current;
+      const userActive =
+        sinceUser < 1800 && (userAmpRef.current > 0.006 || sinceUser < 600);
+
+      setIsAiSpeaking(aiActive);
+      setIsUserSpeaking(userActive);
+
+      if (playback) {
+        lastAiChunk.current = now;
+        aiAmpRef.current = Math.max(aiAmpRef.current, 0.34);
+      }
+      if (userActive) {
+        lastUserChunk.current = now;
+        userAmpRef.current = Math.max(userAmpRef.current, 0.28);
+      }
+
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [status]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const audioManager = useRef<AudioManager | null>(null);
   const sessionRef = useRef<any>(null);
   const historyRef = useRef<string>("");
-  const speakingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const aiAmpRef = useRef(0);
+  const userAmpRef = useRef(0);
+  const lastAiChunk = useRef(0);
+  const lastUserChunk = useRef(0);
+  const aiPlaybackActiveRef = useRef(false);
   // Ref for muted state so the microphone callback always reads the latest
   // value without causing the effect to re-run on every mute toggle.
   const isMutedRef = useRef(false);
@@ -72,6 +176,7 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, intervie
     let cancelled = false;
     let micFallbackTimer: ReturnType<typeof setTimeout> | null = null;
     let countdownInterval: ReturnType<typeof setInterval> | null = null;
+    let recognition: any = null;
 
     const connect = async () => {
       historyRef.current = "";
@@ -80,18 +185,21 @@ export default function LiveInterview({ cvText, jdText, crossMatchData, intervie
       setStatus('connecting');
 
       try {
-        const tokenRes = await fetch('/api/live-token');
+        // Run token fetch and AudioManager init in parallel — saves ~300–800 ms.
+        const mgr = new AudioManager(24000);
+        const [tokenRes] = await Promise.all([
+          fetch('/api/live-token'),
+          mgr.initialize(),
+        ]);
+
         if (!tokenRes.ok) throw new Error('Gagal mendapatkan token koneksi. Coba lagi.');
         const { token } = await tokenRes.json();
         if (!token) throw new Error('Token koneksi tidak valid.');
 
-        const ai = new GoogleGenAI({ apiKey: token, httpOptions: { apiVersion: 'v1alpha' } });
-        const mgr = new AudioManager(24000);
-        await mgr.initialize();
-
-        // If cleanup ran while we were initializing audio, bail out immediately.
+        // If cleanup ran while we were awaiting, bail out immediately.
         if (cancelled) { mgr.close(); return; }
 
+        const ai = new GoogleGenAI({ apiKey: token, httpOptions: { apiVersion: 'v1alpha' } });
         audioManager.current = mgr;
 
         const crossMatchContext = crossMatchData ? `
@@ -354,10 +462,41 @@ ${dataContext}
         //     user's first response, so the real first answer is skipped.
         let micStarted = false;
 
+        // Initialize Web Speech API for accurate Indonesian UI transcripts
+        if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+          const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+          recognition = new SpeechRecognition();
+          recognition.lang = 'id-ID';
+          recognition.continuous = true;
+          recognition.interimResults = false;
+          
+          recognition.onresult = (event: any) => {
+            if (cancelled || isMutedRef.current) return;
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            if (transcript?.trim()) {
+              historyRef.current += `User: ${transcript.trim()}\n`;
+              setTranscriptions(prev => [...prev.slice(-4), { role: 'user', text: transcript.trim() }]);
+            }
+          };
+          
+          recognition.onend = () => {
+             // Restart automatically if not cancelled or muted (continuous mode sometimes stops randomly)
+             if (!cancelled && micStarted && !isMutedRef.current) {
+               try { recognition.start(); } catch (e) {}
+             }
+          };
+          
+          recognition.onerror = (e: any) => console.log('Speech recognition error:', e.error);
+        }
+
         const startMicWhenReady = () => {
           if (micStarted || cancelled) return;
           micStarted = true;
           if (micFallbackTimer) clearTimeout(micFallbackTimer);
+
+          if (recognition) {
+            try { recognition.start(); } catch (e) {}
+          }
 
           mgr.startMicrophone((base64Data) => {
             if (cancelled || isMutedRef.current || !sessionRef.current) return;
@@ -367,6 +506,11 @@ ${dataContext}
               });
               lastUserAudioTime.current = Date.now();
               aiTurnMeasured.current = false;
+              queueMicrotask(() => {
+                const level = Math.min(1, computeRms(base64Data) * 7);
+                userAmpRef.current = level;
+                lastUserChunk.current = performance.now();
+              });
             } catch (_) {
               // Session may be closing — silently ignore.
             }
@@ -385,8 +529,8 @@ ${dataContext}
 
               setStatus('active');
 
-              // Countdown 3→2→1 then trigger Siti's opening greeting
-              let count = 3;
+              // Countdown 1→0 then trigger Siti's opening greeting (reduced from 3s → 1s)
+              let count = 1;
               setCountdown(count);
               countdownInterval = setInterval(() => {
                 count--;
@@ -410,9 +554,9 @@ ${dataContext}
                 }
               }, 1000);
 
-              // Safety fallback: if turnComplete never fires within 18 s
-              // (3s countdown + 15s buffer), start the mic anyway.
-              micFallbackTimer = setTimeout(() => startMicWhenReady(), 18000);
+              // Safety fallback: if turnComplete never fires within 12 s
+              // (1s countdown + 11s buffer), start the mic anyway.
+              micFallbackTimer = setTimeout(() => startMicWhenReady(), 12000);
             },
 
             onmessage: (message: LiveServerMessage) => {
@@ -424,21 +568,23 @@ ${dataContext}
                   aiTurnMeasured.current = true;
                   setLatencyMs(Date.now() - lastUserAudioTime.current);
                 }
-                setIsAiSpeaking(true);
                 mgr.playPCM(base64Audio);
-                if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
-                speakingTimerRef.current = setTimeout(() => setIsAiSpeaking(false), 1500);
+                queueMicrotask(() => {
+                  aiAmpRef.current = Math.min(1, computeRms(base64Audio) * 7);
+                  lastAiChunk.current = performance.now();
+                });
               }
 
               if (message.serverContent?.interrupted) {
                 mgr.stopAllPlayback();
                 setIsAiSpeaking(false);
-                if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
+                aiAmpRef.current = 0;
+                lastAiChunk.current = 0;
               }
 
-              // User speech transcription (from inputAudioTranscription config)
+              // User speech transcription (fallback if Web Speech API isn't supported)
               const inputTranscript = (message as any).serverContent?.inputTranscription?.text;
-              if (inputTranscript?.trim()) {
+              if (inputTranscript?.trim() && !recognition) {
                 historyRef.current += `User: ${inputTranscript.trim()}\n`;
                 setTranscriptions(prev => [...prev.slice(-4), { role: 'user', text: inputTranscript.trim() }]);
               }
@@ -448,6 +594,7 @@ ${dataContext}
               if (outputTranscript?.trim()) {
                 historyRef.current += `AI: ${outputTranscript.trim()}\n`;
                 setTranscriptions(prev => [...prev.slice(-4), { role: 'ai', text: outputTranscript.trim() }]);
+                lastAiChunk.current = performance.now();
               }
 
               // Fallback: capture any text parts in modelTurn (rare with AUDIO modality)
@@ -487,7 +634,7 @@ ${dataContext}
                 startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
                 endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
                 prefixPaddingMs: 400,
-                silenceDurationMs: 700,
+                silenceDurationMs: 1500,
               },
             },
             systemInstruction,
@@ -514,9 +661,15 @@ ${dataContext}
 
     return () => {
       cancelled = true;
-      if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
       if (micFallbackTimer) clearTimeout(micFallbackTimer);
       if (countdownInterval) clearInterval(countdownInterval);
+      
+      if (recognition) {
+        recognition.onend = null;
+        try { recognition.stop(); } catch (e) {}
+        recognition = null;
+      }
+      
       try { sessionRef.current?.close(); } catch (_) { }
       sessionRef.current = null;
       audioManager.current?.close();
@@ -531,6 +684,12 @@ ${dataContext}
   };
 
   const handleHangUp = () => {
+    // Show confirmation popup instead of ending immediately
+    setShowEndConfirm(true);
+  };
+
+  const handleConfirmEnd = () => {
+    setShowEndConfirm(false);
     setStatus('ending');
     try { sessionRef.current?.close(); } catch (_) { }
     audioManager.current?.close();
@@ -541,8 +700,97 @@ ${dataContext}
     setRetryCount(c => c + 1);
   };
 
+  const mode = MODE_CONFIG[interviewMode];
+  const jobTitle = extractJobTitle(jdText);
+  const matchScore = crossMatchData?.match_score;
+
   return (
-    <div className="fixed inset-0 bg-[#0A0C10] text-slate-100 font-sans p-6 flex flex-col overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden text-white font-sans">
+      <AmbientBackground cursorEffect={false} />
+      <div className="relative z-10 flex h-full flex-col p-4 sm:p-6">
+
+      {/* ── End Interview Confirmation Modal ── */}
+      <AnimatePresence>
+        {showEndConfirm && (
+          <motion.div
+            key="end-confirm-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center"
+            style={{ background: 'rgba(6,6,8,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+            onClick={() => setShowEndConfirm(false)}
+          >
+            <motion.div
+              key="end-confirm-card"
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 24 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+              onClick={e => e.stopPropagation()}
+              className="relative mx-4 w-full max-w-sm overflow-hidden border border-white/[0.10] bg-white/[0.04] backdrop-blur-xl"
+              style={{
+                borderRadius: 24,
+                boxShadow: '0 24px 64px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+            >
+              {/* Red glow accent top */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, rgba(239,68,68,0.7), transparent)' }} />
+
+              <div className="p-8 flex flex-col items-center text-center gap-5">
+                {/* Icon */}
+                <motion.div
+                  animate={{ scale: [1, 1.06, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.30)' }}
+                >
+                  <PhoneOff className="w-7 h-7 text-red-400" />
+                </motion.div>
+
+                {/* Text */}
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold tracking-tight text-white">Akhiri Sesi?</h2>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Sesi wawancara akan dihentikan dan evaluasi performa kamu akan segera dibuat.
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-3 w-full mt-1">
+                  <button
+                    onClick={() => setShowEndConfirm(false)}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold transition-all"
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      color: 'rgba(255,255,255,0.60)',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.09)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; }}
+                  >
+                    Lanjutkan
+                  </button>
+                  <button
+                    onClick={handleConfirmEnd}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold transition-all"
+                    style={{
+                      background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                      border: '1px solid rgba(239,68,68,0.40)',
+                      color: '#fff',
+                      boxShadow: '0 8px 24px rgba(220,38,38,0.35)',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(220,38,38,0.55)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(220,38,38,0.35)'; }}
+                  >
+                    Ya, Akhiri
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Full-screen countdown overlay — visible from mount until countdown ends ── */}
       <AnimatePresence>
@@ -554,10 +802,9 @@ ${dataContext}
             exit={{ opacity: 0, transition: { duration: 0.3 } }}
             className="fixed inset-0 z-50 flex flex-col items-center justify-center select-none"
             style={{
-              background: 'rgba(4,9,20,0.92)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: 'inset 0 0 220px rgba(0,0,0,0.9)',
+              background: 'rgba(6,6,8,0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
             }}
           >
             {countdown !== null ? (
@@ -627,167 +874,162 @@ ${dataContext}
         )}
       </AnimatePresence>
 
-      {/* Header Navigation */}
-      <header className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20">
-            <Sparkles className="w-6 h-6 text-white" />
+      {/* Header */}
+      <header className="mb-3 flex shrink-0 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+            <Sparkles className="h-4 w-4 text-white" />
           </div>
-          <h1 className="text-xl font-bold tracking-tighter">interv<span className="text-blue-500">you</span></h1>
+          <span className="text-base font-bold tracking-tight">
+            interv<span className="text-blue-500">you</span>
+          </span>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Mode badge */}
-          <div className={`px-3 py-1.5 rounded-full border flex items-center gap-2 ${MODE_CONFIG[interviewMode].badge}`}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: MODE_CONFIG[interviewMode].dot }} />
-            <span className="text-[10px] font-black uppercase tracking-widest">{MODE_CONFIG[interviewMode].label}</span>
-          </div>
-          <div className="px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full animate-pulse ${status === 'active' ? 'bg-red-500' : 'bg-slate-500'}`}></span>
-            <span className="text-xs font-medium uppercase tracking-widest">
-              {status === 'active' ? 'Sesi Berlangsung' : 'Menghubungkan...'}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className={`hidden rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider sm:inline ${mode.badge}`}>
+            {mode.label}
+          </span>
+          <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-[11px] font-medium text-white/60">
+            {status === 'active' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />}
+            {status === 'active' ? formatTime(elapsedSeconds) : 'Menghubungkan...'}
+          </span>
           <button
             onClick={handleHangUp}
-            className="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center hover:bg-red-600 transition-all group"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.95] text-[#060608] shadow-sm transition hover:bg-white"
           >
-            <PhoneOff className="w-4 h-4 text-slate-300 group-hover:text-white" />
+            <PhoneOff className="h-3.5 w-3.5" />
           </button>
         </div>
       </header>
 
-      {/* Main Bento Grid */}
-      <main className="grid grid-cols-12 grid-rows-6 gap-4 flex-grow">
+      {/* Body */}
+      <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden lg:flex-row lg:gap-4">
 
-        {/* Large Call Interface Card */}
-        <section className="col-span-8 row-span-4 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-8 flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-blue-500 rounded-full"></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-blue-400 rounded-full"></div>
-          </div>
-
-          <div className="relative z-10 text-center">
-            {/* Waveform Visualizer */}
-            <div className="flex items-center justify-center gap-1 mb-8 h-24">
-              {[8, 16, 24, 12, 20, 14, 10].map((h, i) => (
-                <motion.div
-                  key={i}
-                  animate={status === 'active' ? { height: [h * 2, h * 3, h * 2] } : { height: h * 2 }}
-                  transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
-                  className="w-2 bg-blue-500 rounded-full"
-                />
-              ))}
+        {/* Hero */}
+        <section className={`relative flex min-h-[58vh] flex-1 flex-col items-center justify-center overflow-visible p-6 lg:min-h-0 ${GLASS_CARD}`}>
+          <div className="relative z-10 flex h-full w-full max-w-3xl flex-col items-center justify-center">
+            <div className="relative h-[min(72vw,320px)] w-[min(72vw,320px)] overflow-visible sm:h-[min(52vw,360px)] sm:w-[min(52vw,360px)] lg:h-[min(42vh,400px)] lg:w-[min(42vh,400px)]">
+              <div className="absolute inset-[-24px] lg:inset-[-28px]">
+              <VoiceBlob
+                sitiAmpRef={aiAmpRef}
+                userAmpRef={userAmpRef}
+                lastSitiChunk={lastAiChunk}
+                lastUserChunk={lastUserChunk}
+                isSitiSpeaking={isAiSpeaking}
+                isUserSpeaking={isUserSpeaking}
+                aiPlaybackActiveRef={aiPlaybackActiveRef}
+              />
+              </div>
             </div>
 
-            <h2 className="text-3xl font-light mb-2">
-              {MODE_CONFIG[interviewMode].persona}{' '}
-              <span className="italic font-serif" style={{ color: MODE_CONFIG[interviewMode].dot }}>
-                {isAiSpeaking ? 'sedang berbicara...' : ''}
-              </span>
-            </h2>
+            <h2 className="mt-3 text-2xl font-semibold text-white">{mode.persona}</h2>
+            <p className="mt-1 text-sm text-white/45">
+              {isAiSpeaking
+                ? 'Sedang berbicara...'
+                : isUserSpeaking
+                  ? 'Mendengarkan jawaban Anda...'
+                  : status === 'active'
+                    ? 'Siap mendengarkan'
+                    : 'Menyiapkan sesi...'}
+            </p>
 
             {error && (
-              <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl max-w-md mx-auto">
-                <p className="text-red-400 text-sm font-medium">Error: {error}</p>
-                <button
-                  onClick={handleRetry}
-                  className="mt-2 text-xs text-white underline hover:text-red-300 transition-colors"
-                >
-                  Coba Hubungkan Kembali
+              <div className="mt-4 w-full rounded-xl border border-red-400/20 bg-red-500/10 p-3 text-center">
+                <p className="text-sm text-red-300">{error}</p>
+                <button onClick={handleRetry} className="mt-1 text-xs text-white/60 underline hover:text-white">
+                  Coba lagi
                 </button>
               </div>
             )}
-
-
-          </div>
-
-        </section>
-
-        {/* Job Context Card */}
-        <section className="col-span-4 row-span-2 bg-gradient-to-br from-indigo-900/20 to-slate-900 border border-slate-800 rounded-[2rem] p-6">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Konteks Pekerjaan</h3>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-white">Target Posisi</p>
-              <p className="text-xs text-slate-400 italic overflow-hidden text-ellipsis whitespace-nowrap">{jdText.slice(0, 40)}...</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-slate-800 text-[10px] rounded-md border border-slate-700">ANALISIS</span>
-              <span className="px-2 py-1 bg-slate-800 text-[10px] rounded-md border border-slate-700">SKILL GAP</span>
-              <span className="px-2 py-1 bg-blue-900/30 text-blue-300 text-[10px] rounded-md border border-blue-800/50 font-bold uppercase tracking-tighter">Live AI</span>
-            </div>
           </div>
         </section>
 
-        {/* Real-time Status Card */}
-        <section className="col-span-4 row-span-2 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 flex flex-col">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Evaluasi Langsung</h3>
-          <div className="flex-grow flex flex-col justify-center gap-4">
-            <div className="flex items-end justify-between">
-              <span className="text-xs text-slate-400">Status Percakapan</span>
-              <span className="text-xl font-mono text-emerald-400">{status === 'active' ? 'AKTIF' : 'WAIT'}</span>
+        {/* Sidebar */}
+        <aside className="flex max-h-[38vh] min-h-0 w-full flex-none flex-col sm:max-h-[40vh] lg:max-h-none lg:w-[280px] lg:max-w-[30%] lg:flex-none lg:shrink-0">
+          <section className={`${GLASS_CARD} flex min-h-0 flex-1 flex-col p-3`}>
+            <div className="shrink-0">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Konteks</p>
+              <p className="mt-1 text-sm font-semibold leading-snug text-white">{jobTitle}</p>
+              {matchScore != null && (
+                <div className="mt-2">
+                  <div className="mb-1 flex justify-between text-[10px] text-white/40">
+                    <span>Kesesuaian CV</span>
+                    <span className="font-mono font-semibold text-white/70">{matchScore}%</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-white/[0.06]">
+                    <div className="h-full rounded-full bg-white/25 transition-all" style={{ width: `${matchScore}%` }} />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <motion.div
-                animate={{ width: status === 'active' ? '100%' : '0%' }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="bg-emerald-500 h-full rounded-full"
-              />
-            </div>
-            <div className="mt-2">
-              <p className="text-xs text-slate-500 italic">Tip: Berikan jawaban yang terstruktur (STAR method).</p>
-            </div>
-          </div>
-        </section>
 
-        {/* Mic Control Card */}
-        <section className="col-span-3 row-span-2 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 flex flex-col items-center justify-center">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 self-start">Control</h3>
-          <button
-            onClick={handleMuteToggle}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isMuted ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-              }`}
-          >
-            {isMuted ? <MicOff size={28} /> : <Mic size={28} />}
-          </button>
-          <p className="mt-4 text-[10px] text-slate-400 uppercase font-bold tracking-widest">{isMuted ? 'Mic Mati' : 'Mic Aktif'}</p>
-        </section>
-
-        {/* Analysis Insights Card */}
-        <section className="col-span-6 row-span-2 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Live Insights</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-blue-950/20 border border-blue-900/30 rounded-xl">
-              <p className="text-xs font-bold text-blue-400">Analisis Suara</p>
-              <p className="text-[10px] text-slate-400 mt-1">Tone & Intonasi terdeteksi secara real-time.</p>
+            <div className="shrink-0 border-t border-white/[0.06] pt-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Kontrol</p>
+                  <p className="mt-0.5 text-[11px] leading-snug text-white/45">
+                    {isMuted ? 'Mic mati' : isUserSpeaking ? 'Merekam jawaban...' : isAiSpeaking ? `${mode.persona} berbicara` : 'Siap'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleMuteToggle}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    isMuted ? 'bg-red-500/15 text-red-300' : 'bg-white/[0.95] text-[#060608]'
+                  }`}
+                >
+                  {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+                </button>
+              </div>
+              <div className="mt-1.5 flex justify-between gap-2 text-[10px] text-white/30">
+                <span>{mode.persona}</span>
+                <span className="shrink-0 font-mono">{latencyMs == null ? '--' : `${latencyMs}ms`}</span>
+              </div>
             </div>
-            <div className="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl">
-              <p className="text-xs font-bold text-emerald-400">Kesesuaian CV</p>
-              <p className="text-[10px] text-slate-400 mt-1">Mencocokkan pengalaman dengan pertanyaan.</p>
+
+            {crossMatchData && crossMatchData.focus_areas.length > 0 && (
+              <div className="shrink-0 border-t border-white/[0.06] pt-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Fokus</p>
+                <ul className="mt-1.5 space-y-1.5">
+                  {crossMatchData.focus_areas.slice(0, 2).map((area) => (
+                    <li key={area} className="text-[10px] leading-relaxed text-white/45">
+                      <span className="text-white/25">· </span>
+                      {area}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex min-h-0 flex-1 flex-col border-t border-white/[0.06] pt-2.5">
+              <p className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-white/30">Interviewer</p>
+              <div
+                className="relative mt-2 min-h-0 flex-1 overflow-hidden rounded-xl border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.35)] transition-shadow duration-500"
+                style={{
+                  boxShadow: isAiSpeaking
+                    ? `0 4px 24px rgba(0,0,0,0.35), 0 0 28px ${mode.glow}`
+                    : '0 4px 24px rgba(0,0,0,0.35)',
+                }}
+              >
+                <img
+                  src={mode.avatar}
+                  alt={mode.persona}
+                  className="h-full w-full object-cover object-top"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#060608]/95 via-[#060608]/50 to-transparent px-3 pb-3 pt-10">
+                  <p className="text-sm font-semibold leading-tight text-white">{mode.persona}</p>
+                  <p className="mt-0.5 text-[10px] text-white/45">{mode.label}</p>
+                </div>
+                {isAiSpeaking && (
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset transition-opacity duration-300"
+                    style={{ boxShadow: `inset 0 0 0 1px ${mode.glow}` }}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        </section>
-
-        {/* Engine Status Card */}
-        <section className="col-span-3 row-span-2 bg-blue-600 rounded-[2rem] p-6 flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <p className="text-sm font-bold uppercase tracking-tighter">AI Engine</p>
-          <p className="text-[10px] opacity-80 uppercase tracking-widest text-white/70">Multimodal Live</p>
-        </section>
-
+          </section>
+        </aside>
       </main>
-
-      {/* Footer Info */}
-      <footer className="mt-6 flex justify-between items-center px-2 text-[10px] text-slate-500 font-mono">
-        <div className="flex gap-6">
-          <span>Latensi: <span className={latencyMs === null ? 'text-slate-500' : latencyMs < 1500 ? 'text-emerald-500' : 'text-amber-400'}>{latencyMs === null ? '--' : `${latencyMs}ms`}</span></span>
-          <span>Engine: <span className="text-blue-400">GEMINI-LIVE-V3</span></span>
-          <span>Status: <span className="text-white uppercase">{status}</span></span>
-        </div>
-        <div className="italic">Gunakan microphone berkualitas untuk hasil terbaik</div>
-      </footer>
+      </div>
     </div>
   );
 }

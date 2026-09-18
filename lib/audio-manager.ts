@@ -1,13 +1,35 @@
 'use client';
 
+/**
+ * AudioManager — low-latency audio capture & playback via AudioWorklet.
+ *
+ * Public API is identical to the previous ScriptProcessorNode version so that
+ * LiveInterview.tsx and CoachingLive.tsx require ZERO changes.
+ *
+ * Key improvements over ScriptProcessorNode:
+ *   • Mic capture runs on a dedicated audio thread → zero main-thread glitches.
+ *   • Smaller effective buffer (128 frames vs 2048) → ~16x lower input latency.
+ *   • No GC pressure from onaudioprocess callbacks on the main thread.
+ *   • Graceful fallback to ScriptProcessorNode for old browsers that lack
+ *     AudioWorklet support (unlikely in 2026, but safety first).
+ */
 export class AudioManager {
   private audioContext: AudioContext | null = null;
   private stream: MediaStream | null = null;
+
+  // AudioWorklet path
+  private workletNode: AudioWorkletNode | null = null;
+
+  // ScriptProcessor fallback path (only used if AudioWorklet is unsupported)
   private processor: ScriptProcessorNode | null = null;
+
   private source: MediaStreamAudioSourceNode | null = null;
   private isConnected: boolean = false;
   private playbackStartTime: number = 0;
   private activeSources: Set<AudioBufferSourceNode> = new Set();
+
+  // Track whether we've already loaded the worklet module.
+  private workletReady: boolean = false;
 
   constructor(private sampleRate: number = 16000) {}
 
@@ -15,40 +37,67 @@ export class AudioManager {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
       sampleRate: this.sampleRate,
     });
-    
+
     if (this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
+    }
+
+    // Pre-load the AudioWorklet module so startMicrophone is instant.
+    if (this.audioContext.audioWorklet) {
+      try {
+        await this.audioContext.audioWorklet.addModule('/audio-capture-processor.js');
+        this.workletReady = true;
+      } catch (err) {
+        console.warn('[AudioManager] AudioWorklet module failed to load — will fallback to ScriptProcessor:', err);
+        this.workletReady = false;
+      }
     }
   }
 
   async startMicrophone(onAudioData: (base64Data: string) => void) {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ 
+      this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: this.sampleRate
-        } 
+          sampleRate: this.sampleRate,
+        },
       });
 
       if (!this.audioContext) await this.initialize();
-      
+
       this.source = this.audioContext!.createMediaStreamSource(this.stream);
-      // ScriptProcessor is deprecated but often easier for raw PCM than AudioWorklets in a quick prototype.
-      // However, for high-quality near-zero delay, AudioWorklet is better.
-      // But let's use ScriptProcessor for simplicity if permitted, or just implement the buffer conversion.
-      this.processor = this.audioContext!.createScriptProcessor(2048, 1, 1);
 
-      this.processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        const pcmData = this.float32ToInt16(inputData);
-        const base64Data = this.arrayBufferToBase64(pcmData.buffer);
-        onAudioData(base64Data);
-      };
+      if (this.workletReady && this.audioContext!.audioWorklet) {
+        // ─── AudioWorklet path (preferred) ───
+        this.workletNode = new AudioWorkletNode(this.audioContext!, 'audio-capture-processor');
 
-      this.source.connect(this.processor);
-      this.processor.connect(this.audioContext!.destination);
+        this.workletNode.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
+          const base64Data = this.arrayBufferToBase64(e.data);
+          onAudioData(base64Data);
+        };
+
+        this.source.connect(this.workletNode);
+        // AudioWorkletNode must be connected to destination (even if silent)
+        // so the audio graph keeps running.
+        this.workletNode.connect(this.audioContext!.destination);
+      } else {
+        // ─── ScriptProcessor fallback ───
+        console.warn('[AudioManager] Using ScriptProcessor fallback (AudioWorklet unavailable).');
+        this.processor = this.audioContext!.createScriptProcessor(2048, 1, 1);
+
+        this.processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          const pcmData = this.float32ToInt16(inputData);
+          const base64Data = this.arrayBufferToBase64(pcmData.buffer);
+          onAudioData(base64Data);
+        };
+
+        this.source.connect(this.processor);
+        this.processor.connect(this.audioContext!.destination);
+      }
+
       this.isConnected = true;
     } catch (err) {
       console.error('Error accessing microphone:', err);
@@ -58,11 +107,22 @@ export class AudioManager {
 
   stopMicrophone() {
     this.isConnected = false;
+
+    // Worklet path cleanup
+    if (this.workletNode) {
+      try { this.workletNode.port.postMessage('stop'); } catch (_) {}
+      this.workletNode.disconnect();
+      this.workletNode = null;
+    }
+
+    // ScriptProcessor fallback cleanup
     this.processor?.disconnect();
-    this.source?.disconnect();
-    this.stream?.getTracks().forEach(track => track.stop());
     this.processor = null;
+
+    this.source?.disconnect();
     this.source = null;
+
+    this.stream?.getTracks().forEach(track => track.stop());
     this.stream = null;
   }
 
@@ -114,6 +174,13 @@ export class AudioManager {
     }
     source.start(this.playbackStartTime);
     this.playbackStartTime += audioBuffer.duration;
+  }
+
+  /** Read-only — for UI visualizers. Does not affect playback. */
+  isPlaybackActive(): boolean {
+    if (!this.audioContext) return this.activeSources.size > 0;
+    const t = this.audioContext.currentTime;
+    return this.activeSources.size > 0 || this.playbackStartTime > t + 0.02;
   }
 
   stopAllPlayback() {

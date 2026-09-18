@@ -1,19 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
 
+export const maxDuration = 60;
+
 async function withRetry<T>(fn: () => Promise<T>, retries = 4, delayMs = 2000): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (err: any) {
+      const msg = err?.message || '';
+      
+      // Do not retry if the free tier quota is permanently exhausted
+      if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('limit: 20')) {
+        throw err;
+      }
+      
       const isRetryable = err?.status === 429 || err?.status === 503
-        || err?.message?.includes('429') || err?.message?.includes('503')
-        || err?.message?.includes('RESOURCE_EXHAUSTED') || err?.message?.includes('UNAVAILABLE');
+        || msg.includes('429') || msg.includes('503')
+        || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('UNAVAILABLE')
+        || msg.includes('fetch failed') || msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT');
+        
       if (!isRetryable || i === retries - 1) throw err;
+      console.warn(`[Retry ${i + 1}/${retries}] Retrying due to error: ${msg}`);
       await new Promise(res => setTimeout(res, delayMs * (i + 1)));
     }
   }
   throw new Error('Max retries reached');
+}
+
+async function generateWithFallback(ai: GoogleGenAI, parts: any[], config: any) {
+  try {
+    return await withRetry(() => ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: { parts },
+      config
+    }));
+  } catch (err: any) {
+    console.warn(`[Fallback] gemini-3-flash-preview failed, falling back to gemini-2.5-flash:`, err?.message);
+    return await withRetry(() => ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: { parts },
+      config
+    }));
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -37,10 +66,7 @@ export async function POST(request: NextRequest) {
         parts.push({ text: `Extract information from this CV text into a structured JSON format: ${input.text}. Be extremely accurate and preserve all details. If something is missing, use empty strings or empty arrays. Ensure responsibilities are clearly split into an array of strings.` });
       }
 
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: { parts },
-        config: {
+      const response = await generateWithFallback(ai, parts, {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -96,8 +122,8 @@ export async function POST(request: NextRequest) {
             },
             required: ["profile", "experience", "education", "skills", "projects", "certifications"],
           },
-        },
-      }));
+        }
+      );
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     } else {
@@ -108,10 +134,7 @@ export async function POST(request: NextRequest) {
         parts.push({ text: `Extract Job Description information from this text: ${input.text}` });
       }
 
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: { parts },
-        config: {
+      const response = await generateWithFallback(ai, parts, {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -123,13 +146,19 @@ export async function POST(request: NextRequest) {
             },
             required: ["role", "requirements", "responsibilities", "qualifications"],
           },
-        },
-      }));
+        }
+      );
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     }
   } catch (err: any) {
-    console.error('[/api/extract]', err);
-    return NextResponse.json({ error: err.message ?? 'Extraction failed' }, { status: 500 });
+    console.error('[/api/extract]', err, 'Cause:', err.cause);
+    
+    let errMsg = err.message ?? 'Extraction failed';
+    if (errMsg.includes('fetch failed')) {
+      errMsg = 'Gagal terhubung ke server AI (Timeout/Network Error). Pastikan koneksi stabil atau ukuran file tidak terlalu besar.';
+    }
+    
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }

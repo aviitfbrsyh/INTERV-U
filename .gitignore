@@ -12,3 +12,10 @@ temp.txt
 # Claude plan files
 quizzical-*.md
 *-plan.md
+
+# Thesis drafts and temp documents
+/*.docx
+/*.pdf
+/*.txt
+/*.bak
+/BINGKAI.HTML

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Upload, FileText, ChevronRight, Briefcase, Loader2, Edit3, CheckCircle, FileUp, User } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, FileText, ChevronRight, Briefcase, Loader2, Edit3, CheckCircle, FileUp, User, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { extractCV, extractJD, CVData, JDData } from '@/lib/gemini-extraction';
 import { crossMatch, CrossMatchData } from '@/lib/cross-match';
@@ -69,6 +69,154 @@ const MODES: {
 
 type SetupStep = 'input' | 'review';
 
+const LOADING_STEPS = {
+  cv: [
+    'Membaca dokumen...',
+    'Mendeteksi bagian profil...',
+    'Mengekstrak pengalaman kerja...',
+    'Merapikan skill & pendidikan...',
+    'Menyusun struktur data...',
+  ],
+  jd: [
+    'Membaca job description...',
+    'Mengidentifikasi role & level...',
+    'Mengekstrak requirement teknis...',
+    'Menganalisis kualifikasi...',
+    'Menyusun struktur data...',
+  ],
+} as const;
+
+const SKELETON_WIDTHS = [68, 100, 84, 56, 92, 72, 44];
+
+function CardLoadingOverlay({ variant }: { variant: 'cv' | 'jd' }) {
+  const steps = LOADING_STEPS[variant];
+  const [stepIdx, setStepIdx] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    const progressTimer = setInterval(() => {
+      const elapsed = (Date.now() - start) / 1000;
+      const eased = 12 + 81 * (1 - Math.exp(-elapsed / 5.2));
+      setProgress((prev) => Math.max(prev, Math.min(94, eased)));
+    }, 100);
+
+    const stepTimer = setInterval(() => {
+      setStepIdx((prev) => Math.min(prev + 1, steps.length - 1));
+    }, 2400);
+
+    return () => {
+      clearInterval(progressTimer);
+      clearInterval(stepTimer);
+    };
+  }, [steps.length]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      className="absolute inset-0 z-10 flex flex-col overflow-hidden bg-[#060608]/65 backdrop-blur-xl"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-blue-500/[0.04] via-transparent to-violet-500/[0.05]" />
+
+      <div className="relative flex-1 p-5 pt-12 space-y-2.5">
+        {SKELETON_WIDTHS.map((width, i) => (
+          <div
+            key={i}
+            className="h-2.5 rounded-full bg-white/[0.04] border border-white/[0.03] overflow-hidden"
+            style={{ width: `${width}%` }}
+          >
+            <motion.div
+              className="h-full w-1/2 bg-gradient-to-r from-transparent via-white/[0.09] to-transparent"
+              animate={{ x: ['-120%', '280%'] }}
+              transition={{
+                duration: 1.6,
+                repeat: Infinity,
+                delay: i * 0.12,
+                ease: 'linear',
+              }}
+            />
+          </div>
+        ))}
+        <div className="pt-2 flex gap-2">
+          {[40, 52, 36].map((w, i) => (
+            <div
+              key={i}
+              className="h-5 rounded-md bg-blue-400/[0.06] border border-blue-400/[0.08] overflow-hidden"
+              style={{ width: `${w}%` }}
+            >
+              <motion.div
+                className="h-full w-full bg-gradient-to-r from-transparent via-blue-300/[0.12] to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.4 + i * 0.2, ease: 'linear' }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative border-t border-white/[0.06] bg-white/[0.02] px-5 py-4">
+        <div className="flex items-start gap-3 mb-3.5">
+          <div className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+            <span className="absolute inset-0 rounded-full bg-blue-400/10 animate-ping" />
+            <span className="relative h-2 w-2 rounded-full bg-blue-400/70 shadow-[0_0_10px_rgba(96,165,250,0.45)]" />
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={stepIdx}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.28 }}
+                className="text-sm font-medium text-white/85 truncate"
+              >
+                {steps[stepIdx]}
+              </motion.p>
+            </AnimatePresence>
+            <p className="mt-0.5 text-[11px] text-white/30">
+              {variant === 'cv' ? 'AI sedang merapikan CV Anda' : 'AI sedang menganalisis role'}
+            </p>
+          </div>
+          <span className="shrink-0 font-mono text-[11px] tabular-nums text-blue-300/45">
+            {Math.round(progress)}%
+          </span>
+        </div>
+
+        <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.05]">
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              width: `${progress}%`,
+              background:
+                'linear-gradient(90deg, rgba(59,130,246,0.18) 0%, rgba(96,165,250,0.38) 55%, rgba(147,197,253,0.22) 100%)',
+              boxShadow: '0 0 14px rgba(59,130,246,0.15)',
+            }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+          />
+        </div>
+
+        <div className="mt-2.5 flex gap-1">
+          {steps.map((step, i) => (
+            <div
+              key={step}
+              className="h-0.5 flex-1 rounded-full transition-colors duration-500"
+              style={{
+                background:
+                  i <= stepIdx
+                    ? 'rgba(96, 165, 250, 0.35)'
+                    : 'rgba(255, 255, 255, 0.06)',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function InterviewSetup({ onStart }: InterviewSetupProps) {
   const [step, setStep] = useState<SetupStep>('input');
   const [isCvAnalyzing, setIsCvAnalyzing] = useState(false);
@@ -93,6 +241,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     if (type === 'cv') setIsCvAnalyzing(true);
     else setIsJdAnalyzing(true);
 
@@ -129,6 +278,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
       return;
     }
 
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     if (cvNeeded) setIsCvAnalyzing(true);
     if (jdNeeded) setIsJdAnalyzing(true);
 
@@ -175,58 +325,56 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     }
   };
 
+  const glassCard = 'rounded-2xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm';
+  const inputArea = 'w-full h-52 sm:h-56 bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 text-white/70 focus:border-blue-500/40 focus:outline-none transition-all resize-none text-sm leading-relaxed placeholder:text-white/25';
+
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-12">
+    <div className="max-w-5xl mx-auto space-y-6">
       <AnimatePresence mode="wait">
         {step === 'input' && (
           <motion.div 
             key="input-step"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="space-y-12"
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="space-y-6"
           >
-            <div className="flex flex-col items-center gap-6">
-              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-900/40">
-                <Briefcase className="w-8 h-8 text-white" />
+            <div className="flex flex-col items-center gap-3 pt-1">
+              <div className="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/30">
+                <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <div className="text-center space-y-2">
-                <h1 className="text-5xl font-bold tracking-tighter text-white font-sans sm:text-7xl text-center">
+              <div className="text-center space-y-1">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white">
                   interv<span className="text-blue-500">you</span>
                 </h1>
-                <p className="text-slate-400 text-xl font-light">
+                <p className="text-white/45 text-sm sm:text-base font-light">
                   Simulasi wawancara profesional bertenaga AI.
                 </p>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-4">
               {/* CV Section */}
-              <div className="bento-card bg-slate-900/40 border-slate-800 p-8 space-y-6 relative overflow-hidden">
-                {isCvAnalyzing && (
-                  <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
-                    <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-3" />
-                    <p className="text-white font-bold">Mengekstrak CV...</p>
-                    <p className="text-slate-400 text-xs mt-1">Kami sedang merapikan data Anda</p>
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-slate-100">
-                    <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                      <FileText className="w-5 h-5 text-blue-400" />
+              <div className={`${glassCard} relative overflow-hidden`}>
+                {isCvAnalyzing && <CardLoadingOverlay variant="cv" />}
+                <div className={`p-5 space-y-4 ${isCvAnalyzing ? 'invisible' : ''}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 text-white">
+                    <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <FileText className="w-4 h-4 text-blue-400" />
                     </div>
-                    <h2 className="font-semibold text-xl">Resume / CV</h2>
+                    <h2 className="font-semibold text-base">Resume / CV</h2>
                   </div>
-                  <div className="flex bg-slate-800/50 p-1 rounded-lg border border-slate-700">
+                  <div className="flex bg-white/[0.04] p-0.5 rounded-lg border border-white/[0.08]">
                     <button 
                       onClick={() => setCvInputMethod('paste')}
-                      className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold rounded ${cvInputMethod === 'paste' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded-md ${cvInputMethod === 'paste' ? 'bg-blue-600 text-white' : 'text-white/40'}`}
                     >
                       Paste
                     </button>
                     <button 
                       onClick={() => setCvInputMethod('upload')}
-                      className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold rounded ${cvInputMethod === 'upload' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded-md ${cvInputMethod === 'upload' ? 'bg-blue-600 text-white' : 'text-white/40'}`}
                     >
                       Upload
                     </button>
@@ -234,7 +382,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 </div>
 
                 {cvData ? (
-                  <div className="w-full h-80 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center">
+                  <div className="w-full h-52 sm:h-56 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex flex-col items-center justify-center gap-2 p-6 text-center">
                     <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20">
                       <CheckCircle className="text-white w-6 h-6" />
                     </div>
@@ -250,51 +398,47 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 ) : cvInputMethod === 'paste' ? (
                   <textarea
                     placeholder="Tempel teks resume lengkap Anda..."
-                    className="w-full h-80 bg-slate-950/50 border border-slate-800 rounded-2xl p-5 text-slate-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all outline-none resize-none text-sm leading-relaxed"
+                    className={inputArea}
                     value={cvRawText}
                     onChange={(e) => setCvRawText(e.target.value)}
                   />
                 ) : (
                   <div 
                     onClick={() => cvFileRef.current?.click()}
-                    className="w-full h-80 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-slate-900/50 transition-all cursor-pointer group"
+                    className="w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-white/[0.03] transition-all cursor-pointer group"
                   >
-                    <div className="p-4 bg-slate-800/50 rounded-full group-hover:scale-110 transition-transform">
-                        <FileUp className="w-8 h-8 text-blue-500" />
+                    <div className="p-3 bg-white/[0.05] rounded-full group-hover:scale-105 transition-transform">
+                        <FileUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <p className="text-slate-400 text-sm font-medium">Klik untuk unggah PDF atau Gambar</p>
-                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">PDF, PNG, JPG</p>
+                    <p className="text-white/50 text-sm font-medium">Klik untuk unggah PDF atau Gambar</p>
+                    <p className="text-[10px] text-white/25 uppercase tracking-widest">PDF, PNG, JPG</p>
                     <input type="file" ref={cvFileRef} className="hidden" accept=".pdf,image/*" onChange={(e) => handleFileUpload(e, 'cv')} />
                   </div>
                 )}
+                </div>
               </div>
 
               {/* JD Section */}
-              <div className="bento-accent rounded-[2rem] p-8 space-y-6 relative overflow-hidden">
-                {isJdAnalyzing && (
-                  <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
-                    <Loader2 className="w-10 h-10 text-blue-400 animate-spin mb-3" />
-                    <p className="text-white font-bold">Mengekstrak Role...</p>
-                    <p className="text-slate-300/60 text-xs mt-1">Menganalisis kebutuhan pekerjaan</p>
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-slate-100">
-                    <div className="p-2.5 bg-blue-400/10 rounded-xl border border-blue-400/20">
-                      <Briefcase className="w-5 h-5 text-blue-400" />
+              <div className={`${glassCard} relative overflow-hidden`}>
+                {isJdAnalyzing && <CardLoadingOverlay variant="jd" />}
+                <div className={`p-5 space-y-4 ${isJdAnalyzing ? 'invisible' : ''}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 text-white">
+                    <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <Briefcase className="w-4 h-4 text-blue-400" />
                     </div>
-                    <h2 className="font-semibold text-xl">Job Description</h2>
+                    <h2 className="font-semibold text-base">Job Description</h2>
                   </div>
-                  <div className="flex bg-slate-950/30 p-1 rounded-lg border border-slate-800">
+                  <div className="flex bg-white/[0.04] p-0.5 rounded-lg border border-white/[0.08]">
                     <button 
                       onClick={() => setJdInputMethod('paste')}
-                      className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold rounded ${jdInputMethod === 'paste' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded-md ${jdInputMethod === 'paste' ? 'bg-blue-600 text-white' : 'text-white/40'}`}
                     >
                       Paste
                     </button>
                     <button 
                       onClick={() => setJdInputMethod('upload')}
-                      className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold rounded ${jdInputMethod === 'upload' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                      className={`px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded-md ${jdInputMethod === 'upload' ? 'bg-blue-600 text-white' : 'text-white/40'}`}
                     >
                       Upload
                     </button>
@@ -302,7 +446,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 </div>
 
                 {jdData ? (
-                  <div className="w-full h-80 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center gap-3 p-8 text-center">
+                  <div className="w-full h-52 sm:h-56 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex flex-col items-center justify-center gap-2 p-6 text-center">
                     <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20">
                       <CheckCircle className="text-white w-6 h-6" />
                     </div>
@@ -318,34 +462,35 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 ) : jdInputMethod === 'paste' ? (
                   <textarea
                     placeholder="Tempel deskripsi pekerjaan..."
-                    className="w-full h-80 bg-slate-950/30 border border-slate-800/50 rounded-2xl p-5 text-slate-300 focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all outline-none resize-none text-sm leading-relaxed"
+                    className={inputArea}
                     value={jdRawText}
                     onChange={(e) => setJdRawText(e.target.value)}
                   />
                 ) : (
                   <div 
                     onClick={() => jdFileRef.current?.click()}
-                    className="w-full h-80 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-slate-950/20 transition-all cursor-pointer group"
+                    className="w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-white/[0.03] transition-all cursor-pointer group"
                   >
-                    <div className="p-4 bg-slate-950/40 rounded-full group-hover:scale-110 transition-transform">
-                        <FileUp className="w-8 h-8 text-blue-400" />
+                    <div className="p-3 bg-white/[0.05] rounded-full group-hover:scale-105 transition-transform">
+                        <FileUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <p className="text-slate-400 text-sm font-medium">Klik untuk unggah Job Description</p>
-                    <p className="text-[10px] text-slate-600 uppercase tracking-widest">File apa saja</p>
+                    <p className="text-white/50 text-sm font-medium">Klik untuk unggah Job Description</p>
+                    <p className="text-[10px] text-white/25 uppercase tracking-widest">File apa saja</p>
                     <input type="file" ref={jdFileRef} className="hidden" onChange={(e) => handleFileUpload(e, 'jd')} />
                   </div>
                 )}
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center pt-1">
               <button
                 onClick={handleProcessRaw}
                 disabled={((!cvRawText && !cvData) || (!jdRawText && !jdData)) || isCvAnalyzing || isJdAnalyzing}
-                className="group relative inline-flex items-center gap-3 px-10 py-5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-900/20 overflow-hidden"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 bg-white/[0.95] text-black font-semibold rounded-full hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm shadow-lg shadow-white/10"
               >
                 <span>Lanjut ke Review Data</span>
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </motion.div>
@@ -356,10 +501,19 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
             key="review-step"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 pb-20"
+            className="space-y-6 pb-12"
           >
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900/60 p-8 rounded-[2.5rem] border border-slate-800 gap-6">
-                <div className="flex items-center gap-5">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/[0.03] p-5 sm:p-6 rounded-2xl border border-white/[0.07] gap-4">
+                {/* Left: back + title */}
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setStep('input')}
+                    className="flex items-center gap-2 px-3 py-2 rounded-full border border-white/[0.1] bg-white/[0.06] hover:bg-white/[0.1] text-white/60 hover:text-white transition-all text-xs font-semibold w-fit"
+                  >
+                    <ArrowLeft size={14} />
+                    Kembali Edit Data
+                  </button>
+                  <div className="flex items-center gap-5">
                     <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20">
                         <CheckCircle className="w-8 h-8 text-white" />
                     </div>
@@ -367,11 +521,12 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                         <h2 className="text-2xl font-bold text-white tracking-tight">Review & Edit Data</h2>
                         <p className="text-slate-400 text-sm">Pastikan semua data sudah akurat sebelum mulai wawancara.</p>
                     </div>
+                  </div>
                 </div>
                 <button
                     onClick={handleFinalStart}
                     disabled={isCrossMatching}
-                    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white/[0.95] text-black font-semibold rounded-full hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                     {isCrossMatching ? (
                         <>
