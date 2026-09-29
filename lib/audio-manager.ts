@@ -164,6 +164,9 @@ export class AudioManager {
 
     source.onended = () => {
       this.activeSources.delete(source);
+      if (this.activeSources.size === 0 && this.audioContext) {
+        this.playbackStartTime = this.audioContext.currentTime;
+      }
     };
     this.activeSources.add(source);
 
@@ -176,11 +179,10 @@ export class AudioManager {
     this.playbackStartTime += audioBuffer.duration;
   }
 
-  /** Read-only — for UI visualizers. Does not affect playback. */
+  /** Read-only — for UI visualizers and mic gating. */
   isPlaybackActive(): boolean {
-    if (!this.audioContext) return this.activeSources.size > 0;
-    const t = this.audioContext.currentTime;
-    return this.activeSources.size > 0 || this.playbackStartTime > t + 0.02;
+    if (!this.audioContext || this.audioContext.state !== 'running') return false;
+    return this.activeSources.size > 0;
   }
 
   stopAllPlayback() {

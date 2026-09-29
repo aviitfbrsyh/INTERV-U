@@ -57,9 +57,18 @@ ${crossMatchContext}
 
 INSTRUKSI EVALUASI:
 
-1. Pisahkan transkrip menjadi pasangan TANYA-JAWAB. Setiap pertanyaan dari "AI:" dipasangkan dengan jawaban "User:" yang mengikutinya.
+1. EKSTRAKSI SEMUA PASANGAN TANYA-JAWAB — TANPA TERKECUALI (ATURAN MUTLAK):
+   - Baca SELURUH transkrip dari awal sampai akhir.
+   - Identifikasi SETIAP pertanyaan yang diajukan oleh "AI:" dan pasangkan dengan jawaban "User:" yang mengikutinya.
+   - HITUNG berapa total pertanyaan substantif yang ada di transkrip. Biasanya ada 7 pertanyaan, tapi bisa lebih jika ada follow-up.
+   - SETIAP pertanyaan dan jawaban WAJIB masuk ke array qa_analysis. TIDAK ADA yang boleh dilewati, diringkas, atau digabung.
+   - Pembukaan/sapaan awal (seperti "Selamat pagi, saya Siti Rahayu...") dan kalimat penutup sesi BUKAN pertanyaan — jangan dimasukkan.
+   - Jika AI mengajukan pertanyaan follow-up/klarifikasi (bukan pertanyaan baru), GABUNGKAN dengan pertanyaan induknya sebagai 1 entri qa_analysis.
+   - VALIDASI: Jumlah item di qa_analysis HARUS sama dengan jumlah pertanyaan substantif yang teridentifikasi di transkrip. Jika tidak cocok, Anda telah GAGAL.
 
-2. Untuk SETIAP pasangan tanya-jawab, berikan analisis lengkap:
+2. Untuk SETIAP pasangan tanya-jawab di qa_analysis, berikan analisis LENGKAP:
+   - question: tulis pertanyaan interviewer secara utuh (jangan diringkas)
+   - answer: tulis jawaban kandidat secara utuh (jangan diringkas, jangan dipotong)
    - star: deteksi 4 komponen STAR (Situation/Task/Action/Result), tiap komponen tandai present (true/false) + evidence (kutipan singkat dari jawaban atau "-" jika absen). score = jumlah komponen present (0-4).
    - concise: nilai 5 dimensi ConCISE skor 1-10 + note singkat:
      * consistency: konsistensi jawaban dengan pertanyaan
@@ -106,10 +115,12 @@ INSTRUKSI EVALUASI:
 8. final_recommendation: rekomendasi akhir 2-3 kalimat
 9. recommendation_verdict: salah satu dari: "recommended", "conditional", "not_recommended"
 
-PENTING:
+ATURAN KRITIS — WAJIB DIPATUHI:
 - Gunakan Bahasa Indonesia profesional
 - Setiap analisis HARUS berbasis bukti dari transkrip
 - Suggestion dan hack harus AKSI YANG BISA LANGSUNG DIPRAKTIKKAN
+- SEMUA pertanyaan dan jawaban dalam transkrip WAJIB dianalisis — TIDAK ADA yang boleh terlewat! Jika ada 7 pertanyaan, maka qa_analysis HARUS berisi 7 entri. Jika ada 5, maka 5. Hitung dan cocokkan.
+- Tulis question dan answer SECARA LENGKAP di setiap entri qa_analysis — jangan meringkas atau memotong.
 - Jika transkrip kosong atau sangat pendek, tetap buat array qa_analysis dengan minimal 1 entri menunjukkan bahwa wawancara tidak cukup data`;
 
     const response = await callWithRetry(() => ai.models.generateContent({

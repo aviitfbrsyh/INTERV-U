@@ -274,18 +274,14 @@ EKSPRESI EMOSI LEWAT SUARA:
 
 PENTING SOAL EKSPRESI: Ekspresi seperti "Eh", "Hah", "Waduh" harus TERASA GENUINE — muncul karena memang ada alasannya, bukan jadi kebiasaan atau template pembuka kalimat. Kalau setiap kalimat dimulai "Eh...", itu terdengar palsu. Pakai seperlunya, sesekali saja.
 
-JEDA BERMAKNA (wajib dipakai, jangan langsung jawab):
-- Saat berpikir atau mau kasih poin penting: "Hmm...", "Oke jadi...", "Nah...", "Tunggu ya..."
-- Saat transisi topik: "Terus nih...", "Nah yang menarik...", "Oh iya ngomong-ngomong..."
-- Saat mau kasih contoh: "Jadi gini ya...", "Misalnya nih...", "Coba bayangin..."
+JEDA BERMAKNA & GAYA BICARA:
+- DEFAULT: Langsung tanggapi inti pembicaraan kandidat tanpa filler pembuka yang dipaksakan.
+- DILARANG: Membuka setiap kalimat dengan "Hmm...", "Ohh...", "Oke jadi...", atau "Nah...". JANGAN jadikan filler sebagai kebiasaan pembuka.
+- Sesekali (sangat jarang) saat benar-benar memikirkan saran teknis atau poin penting, boleh jeda natural.
+- Variasikan pembuka kalimat: langsung ke pokok pikiran, tanggapi ide kandidat, atau berikan sudut pandang baru.
 
-PENEKANAN:
-- Kata-kata penting diucapkan lebih lambat dan sedikit lebih keras
-- Pertanyaan balik ke kandidat — nada naik di akhir kalimat
-- Saat kasih contoh kalimat konkret — ucapkan contohnya dengan nada sedikit berbeda, seperti sedang memperagakan
-
-FILLER KATA ALAMI (pakai secara natural, jangan berlebihan — jangan semua dipakai sekaligus):
-"nah", "tuh", "oke", "beneran", "dengerin ya", "jadi gini", "serius deh", "makanya", "justru itu", "lho", "dong", "deh", "sih", "nih"
+PENEKANAN & FILLER ALAMI (gunakan sangat hemat dan natural, jangan jadi template):
+- Gunakan partikel alami secara wajar ("sih", "kan", "nih", "dong") dalam kalimat, bukan sebagai pembuka yang monoton.
 
 CARA DISKUSI:
 - Kasih contoh frasa atau kalimat konkret yang bisa langsung dipakai
@@ -431,7 +427,11 @@ MULAI: ${previousTranscripts.length > 0
               }
             },
 
-            onclose: () => {},
+            onclose: (event: any) => {
+              console.log('[CoachingLive] Session closed:', event);
+              if (cancelled) return;
+              setError('Koneksi sesi terputus dari server. Silakan muat ulang atau coba lagi.');
+            },
             onerror: (err) => {
               if (cancelled) return;
               setError(err instanceof Error ? err.message : 'Terjadi kesalahan koneksi.');
@@ -446,10 +446,10 @@ MULAI: ${previousTranscripts.length > 0
             inputAudioTranscription: {},
             realtimeInputConfig: {
               automaticActivityDetection: {
-                startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
-                endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
-                prefixPaddingMs: 400,
-                silenceDurationMs: 1500,
+                startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_HIGH,
+                endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_UNSPECIFIED,
+                prefixPaddingMs: 300,
+                silenceDurationMs: 1200,
               },
             },
             systemInstruction,
