@@ -30,12 +30,15 @@ export async function POST(request: NextRequest) {
 
     const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Lakukan analisis cross-matching antara profil kandidat dan kebutuhan pekerjaan berikut. Identifikasi kesesuaian skill, gap kompetensi, dan area spesifik yang perlu digali lebih dalam dalam sesi wawancara.
+      contents: `Lakukan analisis cross-matching antara profil kandidat (CV) dan kompetensi yang dituntut pekerjaan (JD).
+Gunakan acuan Kamus Kompetensi Spencer & Spencer (1993) khususnya 7 Kompetensi Inti IT: EXP (Technical Expertise), AT (Analytical Thinking), CT (Conceptual Thinking), ACH (Achievement Orientation), CO (Concern for Order/Quality), TW (Teamwork), INT (Initiative).
+
+Identifikasi kesesuaian kompetensi yang telah terbukti di CV, gap kompetensi yang belum tampak, dan area perilaku spesifik yang WAJIB digali (probing) dalam sesi Behavioral Event Interview (BEI) berbasis bukti nyata.
 
 CV KANDIDAT:
 ${cvText}
 
-JOB DESCRIPTION:
+JOB DESCRIPTION & KOMPETENSI TARGET:
 ${jdText}`,
       config: {
         responseMimeType: "application/json",

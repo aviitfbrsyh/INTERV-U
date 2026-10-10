@@ -288,6 +288,26 @@ export function generateEvaluationReport(
         <p style="font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.08em;margin:0 0 4px;">Jawaban Kandidat</p>
         <p style="margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.7;background:#0f172a;padding:10px 14px;border-radius:8px;border-left:3px solid #334155;">${qa.answer}</p>
 
+        ${qa.competency ? `
+        <div style="background:#082f49;border:1px solid #0284c7;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;font-weight:700;color:#38bdf8;">🎯 Kompetensi [${qa.competency.code}] ${qa.competency.name}</span>
+          <span style="font-size:10px;font-weight:800;color:#7dd3fc;background:#0369a1;padding:2px 8px;border-radius:99px;">Level ${qa.competency.level}/5</span>
+        </div>` : ''}
+
+        ${qa.fact ? `
+        <div style="background:#052e16;border:1px solid #166534;border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:10px;font-weight:800;color:#4ade80;text-transform:uppercase;">🎯 Kedalaman Probing FACT</span>
+            <span style="font-size:10px;font-weight:700;color:#86efac;">${qa.fact.total}/40</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px;color:#cbd5e1;">
+            <div><strong style="color:#fbbf24;">F (Feeling/Focus):</strong> ${qa.fact.feeling.score}/10 <span style="color:#64748b;">— ${qa.fact.feeling.note}</span></div>
+            <div><strong style="color:#60a5fa;">A (Action):</strong> ${qa.fact.action.score}/10 <span style="color:#64748b;">— ${qa.fact.action.note}</span></div>
+            <div><strong style="color:#c084fc;">C (Context):</strong> ${qa.fact.context.score}/10 <span style="color:#64748b;">— ${qa.fact.context.note}</span></div>
+            <div><strong style="color:#38bdf8;">T (Thinking):</strong> ${qa.fact.thinking.score}/10 <span style="color:#64748b;">— ${qa.fact.thinking.note}</span></div>
+          </div>
+        </div>` : ''}
+
         <div style="display:flex;gap:12px;margin-bottom:12px;">
 
           <div style="flex:1;min-width:0;background:#071c0e;border:1px solid #166534;border-radius:10px;padding:12px;">
@@ -417,6 +437,26 @@ export function generateEvaluationReport(
       </div>
     </div>
   </div>
+
+  ${evaluation.competency_scores && evaluation.competency_scores.length > 0 ? `
+  <!-- EVALUASI KOMPETENSI SPENCER & SPENCER -->
+  <p class="section-title">Evaluasi Kompetensi (Spencer & Spencer 1993)</p>
+  <div style="background:#0c1322;border:1px solid #1e293b;border-radius:14px;padding:20px;margin-bottom:24px;">
+    <p style="font-size:11px;color:#64748b;margin-bottom:14px;">Standar Behavioral Event Interview (BEI) — Skala Level Kemahiran Perilaku 1–5</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      ${evaluation.competency_scores.map(cs => `
+        <div style="background:#111c2e;border:1px solid #1e3a5f;border-radius:10px;padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="background:#0369a1;color:#bae6fd;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;font-family:monospace;">${cs.code}</span>
+            <span style="font-size:11px;font-weight:700;color:#38bdf8;">Level ${cs.level}/5 · ${cs.score}/100</span>
+          </div>
+          <p style="font-size:12px;font-weight:700;color:#f1f5f9;margin-bottom:4px;">${cs.name}</p>
+          <p style="font-size:11px;color:#94a3b8;line-height:1.5;font-style:italic;">"${cs.summary}"</p>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+  ` : ''}
 
   <!-- KEKUATAN & KELEMAHAN -->
   <p class="section-title">Kekuatan & Area Pengembangan</p>

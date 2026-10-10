@@ -128,11 +128,29 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     } else {
+      const jdPrompt = `Anda adalah Senior HR & Industrial Organizational Psychologist.
+Tugas Anda adalah mengekstrak informasi Job Description (JD) dan MEMETAKAN TUGAS/REQUIREMENTS TERSEBUT KE DALAM KAMUS KOMPETENSI SPENCER & SPENCER (1993).
+
+ACUAN UTAMA: KAMUS KOMPETENSI SPENCER & SPENCER (Fokus 7 Inti IT):
+1. EXP - Technical/Professional Expertise: Penguasaan keahlian teknis pemrograman, database, infrastruktur, atau tools.
+2. AT - Analytical Thinking: Kemampuan analisis logis, debugging terstruktur, dan penelusuran akar masalah (root cause).
+3. CT - Conceptual Thinking: Perancangan arsitektur sistem, pola modul (design patterns), dan pemahaman sistem menyeluruh.
+4. ACH - Achievement Orientation: Dorongan efisiensi, optimasi performa sistem, pemenuhan target sprint dan standar tinggi.
+5. CO - Concern for Order, Quality and Accuracy: Disiplin clean code, ketelitian pengujian/testing, dan meminimalkan celah bug.
+6. TW - Teamwork and Cooperation: Kolaborasi tim Scrum/Agile, penerimaan feedback code review, dan saling membantu.
+7. INT - Initiative: Proaktif refactoring, automasi alur kerja, dan pencegahan risiko teknis sebelum terjadi.
+(Sertakan juga kode Spencer & Spencer lain jika relevan, misal INFO untuk Information Seeking atau CSO untuk Customer Service Orientation).
+
+INSTRUKSI:
+1. Ekstrak role, requirements, responsibilities, dan qualifications secara terstruktur.
+2. Dari butir-butir tugas dan syarat tersebut, tentukan 4 sampai 7 kompetensi Spencer & Spencer yang paling esensial ('target_competencies').
+3. Jelaskan alasan keterkaitan (rationale) dan perilaku konkret apa yang perlu digali saat wawancara (behavioral_focus).`;
+
       if (input.file) {
         parts.push({ inlineData: { data: input.file.base64, mimeType: input.file.mimeType } });
-        parts.push({ text: "Extract Job Description information from this document." });
+        parts.push({ text: jdPrompt });
       } else {
-        parts.push({ text: `Extract Job Description information from this text: ${input.text}` });
+        parts.push({ text: `${jdPrompt}\n\nTEKS JOB DESCRIPTION:\n${input.text}` });
       }
 
       const response = await generateWithFallback(ai, parts, {
@@ -144,8 +162,23 @@ export async function POST(request: NextRequest) {
               requirements: { type: Type.ARRAY, items: { type: Type.STRING } },
               responsibilities: { type: Type.ARRAY, items: { type: Type.STRING } },
               qualifications: { type: Type.ARRAY, items: { type: Type.STRING } },
+              target_competencies: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    code: { type: Type.STRING },
+                    name: { type: Type.STRING },
+                    cluster: { type: Type.STRING },
+                    importance: { type: Type.STRING },
+                    rationale: { type: Type.STRING },
+                    behavioral_focus: { type: Type.STRING },
+                  },
+                  required: ["code", "name", "cluster", "importance", "rationale", "behavioral_focus"],
+                },
+              },
             },
-            required: ["role", "requirements", "responsibilities", "qualifications"],
+            required: ["role", "requirements", "responsibilities", "qualifications", "target_competencies"],
           },
         }
       );

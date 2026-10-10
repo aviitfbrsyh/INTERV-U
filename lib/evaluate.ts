@@ -10,6 +10,19 @@ export interface QAAnalysis {
     result: { present: boolean; evidence: string };
     score: number;
   };
+  fact?: {
+    feeling: { score: number; note: string };
+    action: { score: number; note: string };
+    context: { score: number; note: string };
+    thinking: { score: number; note: string };
+    total: number;
+  };
+  competency?: {
+    code: string;
+    name: string;
+    level: number;
+    behavior_note: string;
+  };
   concise: {
     consistency: { score: number; note: string };
     clarity: { score: number; note: string };
@@ -33,11 +46,20 @@ export interface CandidateArchetype {
   hr_perspective: string;
 }
 
+export interface CompetencyScore {
+  code: string;
+  name: string;
+  level: number;
+  score: number;
+  summary: string;
+}
+
 export interface EvaluationData {
   overall_score: number;
   overall_summary: string;
   candidate_archetype: CandidateArchetype;
   qa_analysis: QAAnalysis[];
+  competency_scores?: CompetencyScore[];
   cv_jd_match: {
     score: number;
     matched_skills_in_interview: string[];

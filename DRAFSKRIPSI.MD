@@ -1,4 +1,4 @@
-RANCANG BANGUN SISTEM SIMULASI KERJA VOICE-TO-VOICE BERBASIS CV-DESKRIPSI PEKRJAAN MATCHING DENGAN EVALUASI LLM-AS-A-JUDGE
+RANCANG BANGUN SISTEM SIMULASI KERJA VOICE-TO-VOICE BERBASIS PEMETAAN KOMPETENSI SPENCER & SPENCER DENGAN EVALUASI LLM-AS-A-JUDGE
 
 HALAMAN JUDUL
 
@@ -8,9 +8,8 @@ HALAMAN JUDUL
 Disusun Oleh:
 
 
-	N a m a
-	NIM	: Avit Febriansyah
-: 23523238
+	N a m a	: Avit Febriansyah
+	NIM	: 23523238
 
 
 
@@ -25,73 +24,72 @@ UNIVERSITAS ISLAM INDONESIA
 PENDAHULUAN
 
 1.1	Latar Belakang
-Transisi dari dunia perguruan tinggi menuju ekosistem industri teknologi merupakan fase krusial yang menuntut kesiapan profesional yang matang bagi lulusan sarjana bidang Teknologi Informasi (TI). Ruang lingkup permasalahan ini berpusat pada dinamika rekrutmen di era transformasi digital, di mana perusahaan kini menerapkan proses seleksi yang semakin kompleks dan menuntut kandidat untuk memiliki literasi teknologi serta kesiapan kerja yang komprehensif (Hiaruman & Pratama, 2025). Penyelarasan profil kualifikasi lulusan dengan standar industri yang dinamis menjadi tantangan utama guna meminimalkan terjadinya ketidakcocokan kualifikasi (skill mismatch) yang saat ini menjadi hambatan utama produktivitas tenaga kerja terdidik di pasar global maupun nasional (Bevara et al., 2025; Khoiruddin et al., 2024)
-Fakta di lapangan menunjukkan adanya hambatan signifikan dalam penyerapan tenaga kerja sarjana di Indonesia. Data terbaru dari Badan Pusat Statistik (BPS) per Februari 2025 melaporkan bahwa tingkat pengangguran terbuka justru didominasi oleh lulusan perguruan tinggi, dengan angka kenaikan mencapai 14,6% dibandingkan periode tahun sebelumnya (Syahri et al., 2025). Kondisi pasar kerja yang kompetitif tersebut berkontribusi secara langsung pada tingginya prevalensi kecemasan karier (career anxiety) pada mahasiswa tingkat akhir. Berdasarkan studi empiris terbaru, tercatat sebanyak 36,6% lulusan baru berada dalam kategori kecemasan sedang yang dipicu oleh tekanan sosial dan ketidakpastian masa depan profesional (Asyiah & Nio, 2025). Urgensi masalah penelitian ini terletak pada korelasi kuat antara tingkat kecemasan dengan rendahnya efikasi diri dalam menghadapi persiapan wawancara kerja profesional (Giffar et al., 2024; Ibrahim et al., 2025). Kegagalan lulusan di bidang Teknologi Informasi (TI) dalam menunjukkan potensi teknis terbaiknya sering kali berakar dari hambatan psikologis dan kurangnya persiapan komunikasi lisan yang terpersonalisasi sesuai dengan syarat spesifik pekerjaan (Bevara et al., 2025). Tanpa adanya sistem pendukung simulasi yang mampu memberikan interaksi dua arah secara realistis dan umpan balik personal, kesenjangan antara kualifikasi akademik dengan ekspektasi industri akan terus melebar, sehingga diperlukan inovasi teknologi yang mampu meningkatkan kematangan karier mahasiswa secara terukur.
-Identifikasi permasalahan dalam persiapan karier menunjukkan bahwa keterbatasan utama simulator wawancara saat ini terletak pada rendahnya relevansi materi uji dengan kualifikasi unik kandidat. Penggunaan Asynchronous Video Interviews (AVIs) di industri rekrutmen global sering kali dikritik karena sifatnya yang impersonal dan hanya berupa komunikasi satu arah (monolog), sehingga gagal melatih kemampuan dialog interaktif kandidat (Hemamou et al., 2019; Zibarras et al., 2018). Ketidakhadiran pewawancara secara langsung dalam sistem asinkron tersebut menyebabkan kandidat kehilangan kesempatan untuk mendapatkan umpan balik spontan yang sangat diperlukan dalam membangun kepercayaan diri. Tinjauan terhadap sistem seperti HireVue dan Prep AI menunjukkan bahwa arsitektur kaskade (Speech-to-Text ke Text-to-Speech) yang digunakan menghasilkan latensi tinggi berkisar antara 1 hingga 3 detik, yang secara signifikan merusak kenyamanan percakapan dan membuatnya terasa robotik (Ethiraj et al., 2025). Selain itu, algoritma evaluasi pada sistem pendahulu rentan terhadap bias verbositas, di mana Large Language Model (LLM) cenderung memberikan penilaian tinggi hanya berdasarkan panjang jawaban (length bias) tanpa mengukur kelugasan informasi secara ilmiah (Giffar et al., 2024). Masalah ini diperparah dengan ketiadaan sinkronisasi otomatis antara profil kualifikasi pada CV dengan deskripsi pekerjaan yang dilamar, sehingga simulasi yang dihasilkan sering kali bersifat generik dan tidak menyasar pada celah kompetensi kandidat (Bevara et al., 2025).
-Penelitian ini dilaksanakan di wilayah Daerah Istimewa Yogyakarta (DIY), sebuah provinsi yang memiliki konsentrasi institusi pendidikan tinggi dan kepadatan populasi mahasiswa yang signifikan secara nasional. Pemilihan lokasi ini didasarkan pada karakteristik unik Yogyakarta sebagai pusat gravitasi inovasi digital di Indonesia yang telah melahirkan ratusan entitas bisnis teknologi baru dalam satu dekade terakhir (Tan, 2025). Yogyakarta diakui sebagai laboratorium sosial yang strategis karena menampung mahasiswa dari berbagai latar belakang etnis di seluruh wilayah Nusantara, sehingga mengukuhkan predikatnya sebagai "Miniatur Indonesia" atau pusat pendidikan kosmopolitan modern (Nursanti & Andriyanti, 2021). Tantangan yang dihadapi oleh mahasiswa tingkat akhir di wilayah ini mencerminkan keberagaman profil lulusan perguruan tinggi Indonesia secara komprehensif, sehingga data yang diperoleh dari responden di Yogyakarta dianggap memiliki tingkat representativitas yang tinggi untuk mewakili populasi lulusan bidang Teknologi Informasi (TI) nasional dalam menghadapi persaingan pasar kerja profesional (Ibrahim et al., 2025).
-Berdasarkan paparan mengenai tingginya angka pengangguran sarjana serta kendala teknis pada sistem simulator wawancara yang ada saat ini, ditemukan adanya kebutuhan mendesak akan inovasi platform persiapan karier yang lebih interaktif dan personal. Keterbatasan sistem terdahulu yang masih bersifat monolog asinkron serta memiliki kendala latensi tinggi menuntut adanya penerapan teknologi audio yang diproses secara native guna menciptakan interaksi suara waktu nyata yang natural (Ethiraj et al., 2025). Selain itu, integrasi data kualifikasi kandidat secara utuh melalui arsitektur Retrieval-Augmented Generation (RAG) menjadi krusial untuk menghasilkan skenario wawancara yang kontekstual dan mampu meminimalkan bias informasi (Bevara et al., 2025). Implementasi metrik evaluasi yang objektif seperti metrik ConCISE juga diperlukan untuk memberikan umpan balik kualitatif mengenai kelugasan komunikasi kandidat yang selama ini sulit diukur secara otomatis(Ghafari et al., 2025). Oleh karena itu, penelitian ini bertujuan untuk mengembangkan sebuah sistem simulasi wawancara kerja cerdas berbasis web yang mengintegrasikan interaksi voice-to-voice waktu nyata dengan mekanisme pencocokan kualifikasi (cross-matching) antara profil kandidat dan kriteria pekerjaan menggunakan evaluasi LLM-as-a-Judge. Inovasi ini diharapkan dapat menjadi sarana edukasi yang efektif bagi lulusan baru bidang Teknologi Informasi (TI) di Yogyakarta dalam meningkatkan kesiapan mental dan kompetensi komunikasi mereka sebelum memasuki pasar tenaga kerja profesional.
+Transisi dari dunia perguruan tinggi menuju ekosistem industri teknologi merupakan fase krusial yang menuntut kesiapan profesional yang matang bagi lulusan sarjana bidang Teknologi Informasi (TI). Ruang lingkup permasalahan ini berpusat pada dinamika rekrutmen di era transformasi digital, di mana perusahaan kini menerapkan proses seleksi yang semakin kompleks dan menuntut kandidat untuk memiliki literasi teknologi serta kesiapan kerja yang komprehensif (Hiaruman & Pratama, 2025). Penyelarasan profil kualifikasi lulusan dengan standar industri yang dinamis menjadi tantangan utama guna meminimalkan terjadinya ketidakcocokan kualifikasi (skill mismatch) yang saat ini menjadi hambatan utama produktivitas tenaga kerja terdidik di pasar global maupun nasional (Bevara et al., 2025; Khoiruddin et al., 2024).
+
+Fakta di lapangan menunjukkan adanya hambatan signifikan dalam penyerapan tenaga kerja sarjana di Indonesia. Data Badan Pusat Statistik (BPS) per Februari 2025 melaporkan bahwa tingkat pengangguran terbuka didominasi oleh lulusan perguruan tinggi, dengan angka kenaikan mencapai 14,6% dibandingkan periode tahun sebelumnya (Syahri et al., 2025). Kondisi pasar kerja yang kompetitif tersebut berkontribusi secara langsung pada tingginya prevalensi kecemasan karier (career anxiety) pada mahasiswa tingkat akhir. Berdasarkan studi empiris, tercatat sebanyak 36,6% lulusan baru berada dalam kategori kecemasan sedang yang dipicu oleh tekanan sosial dan ketidakpastian masa depan profesional (Asyiah & Nio, 2025). Urgensi masalah penelitian ini terletak pada korelasi kuat antara tingkat kecemasan dengan rendahnya efikasi diri dalam menghadapi persiapan wawancara kerja profesional (Giffar et al., 2024; Ibrahim et al., 2025). Kegagalan lulusan di bidang TI dalam menunjukkan potensi teknis terbaiknya sering kali berakar dari hambatan psikologis dan kurangnya persiapan komunikasi lisan berbasis pembuktian perilaku nyata (Bevara et al., 2025).
+
+Dalam praktik rekrutmen industri modern, paradigma wawancara telah bergeser dari sekadar pengujian hafalan teori atau daftar tugas mentah pada deskripsi pekerjaan (Job Description) menuju penilaian berbasis kompetensi perilaku (*behavioral competency*). Berlandaskan teori seminal Spencer & Spencer (1993) dalam *Competence at Work*, prediktor terbaik dari performa kerja unggul (*superior performance*) di masa depan adalah perilaku nyata yang telah ditunjukkan individu pada situasi kritis di masa lalu. Pendekatan standar emas yang digunakan praktisi Human Resources (HR) global adalah *Behavioral Event Interview* (BEI), di mana kandidat diminta menceritakan pengalaman nyata (*"Ceritakan situasi saat Anda..."*) dengan larangan mengajukan pertanyaan teoretis konseptual maupun skenario hipotetis abstrak (*"Apa yang akan Anda lakukan jika..."*).
+
+Namun demikian, identifikasi permasalahan pada simulator wawancara berbasis AI yang ada saat ini menunjukkan bahwa sebagian besar sistem masih mengajukan pertanyaan yang bersumber langsung secara dangkal dari teks Job Description tanpa pemetaan kompetensi terstandar, atau menggunakan mode-mode buatan yang tidak mencerminkan wawancara kerja riil. Penggunaan Asynchronous Video Interviews (AVIs) di industri rekrutmen global juga sering dikritik karena sifatnya yang impersonal dan hanya berupa komunikasi satu arah (monolog), sehingga gagal melatih kemampuan dialog interaktif kandidat (Hemamou et al., 2019; Zibarras et al., 2018). Tinjauan terhadap sistem kaskade (Speech-to-Text ke Text-to-Speech) menunjukkan adanya latensi tinggi berkisar antara 1 hingga 3 detik yang merusak dinamika percakapan alami (Ethiraj et al., 2025). Selain itu, algoritma evaluasi pada sistem pendahulu rentan terhadap bias verbositas (*length bias*), di mana Large Language Model (LLM) cenderung memberi skor tinggi pada jawaban panjang tanpa mengukur kelugasan informasi dan kedalaman bukti perilaku (Giffar et al., 2024).
+
+Untuk mengatasi kelemahan tersebut, sistem wawancara perlu mengintegrasikan landasan teoritis Kamus Kompetensi Spencer & Spencer (1993) yang dikhususkan pada peran teknologi informasi melalui penetapan 7 kompetensi inti: *Technical/Professional Expertise* (EXP), *Analytical Thinking* (AT), *Conceptual Thinking* (CT), *Achievement Orientation* (ACH), *Concern for Order, Quality and Accuracy* (CO), *Teamwork and Cooperation* (TW), dan *Initiative* (INT). Selain itu, teknik penggalian (*probing*) dan evaluasi harus menggabungkan struktur narasi STAR (*Situation, Task, Action, Result*) dengan instrumen FACT (*Feeling/Focus, Action, Context/Consequence, Thinking*) serta metrik kelugasan ConCISE (Ghafari et al., 2025).
+
+Penelitian ini dilaksanakan di wilayah Daerah Istimewa Yogyakarta (DIY) sebagai pusat pendidikan dan laboratorium sosial inovasi digital dengan representasi mahasiswa yang multikultural (Tan, 2025; Nursanti & Andriyanti, 2021). Oleh karena itu, penelitian ini bertujuan mengembangkan sistem simulasi wawancara kerja cerdas berbasis web yang mengintegrasikan interaksi *voice-to-voice* waktu nyata berlatensi rendah dengan mekanisme pemetaan kompetensi Spencer & Spencer dari Job Description dan evaluasi komprehensif menggunakan pendekatan LLM-as-a-Judge.
 
 1.2	Rumusan Masalah
 Berdasarkan latar belakang yang telah diuraikan di atas, rumusan masalah dalam penelitian ini adalah sebagai berikut:
-a.	Bagaimana merancang dan mengembangkan sistem simulasi wawancara kerja berbasis web yang mampu menghadirkan interaksi voice-to-voice secara real-time dengan latensi rendah?
-b.	Bagaimana mengimplementasikan mekanisme cross-matching berbasis RAG antara profil kualifikasi kandidat dan deskripsi pekerjaan untuk menghasilkan skenario wawancara yang personal dan kontekstual?
-c.	Bagaimana menerapkan metrik evaluasi objektif berbasis LLM-as-a-Judge untuk mengukur kelugasan komunikasi dan kesiapan kerja kandidat secara otomatis?
+a.	Bagaimana merancang dan mengembangkan sistem simulasi wawancara kerja berbasis web yang mampu menghadirkan interaksi voice-to-voice secara real-time dengan latensi rendah menggunakan Google Gemini Multimodal Live API?
+b.	Bagaimana mengimplementasikan mekanisme pemetaan kompetensi berbasis Kamus Kompetensi Spencer & Spencer (1993) dari Job Description (JD) dan pencocokan dengan Curriculum Vitae (CV) kandidat untuk menyusun pertanyaan Behavioral Event Interview (BEI) yang kontekstual dan personal?
+c.	Bagaimana menerapkan evaluasi objektif berbasis LLM-as-a-Judge yang menggabungkan deteksi struktur narasi STAR, kedalaman probing FACT (Feeling, Action, Context, Thinking), metrik kelugasan ConCISE, dan penentuan skala tingkat kemahiran level kompetensi (1–5)?
 
 1.3	Batasan Masalah
 Untuk menghindari meluasnya ruang lingkup penelitian, maka ditetapkan beberapa batasan masalah sebagai berikut:
-a. Sistem difokuskan pada simulasi wawancara kerja teknis dan keperilakuan (behavioral) untuk lulusan baru (fresh graduate) pada bidang Teknologi Informasi (TI).
-b. Arsitektur interaksi suara menggunakan pendekatan voice-to-voice waktu nyata (real-time) yang secara khusus dibangun menggunakan integrasi Google Gemini Multimodal Live API.
-c. Algoritma evaluasi dan umpan balik (LLM-as-a-Judge) dibatasi pada analisis linguistik, kelugasan informasi (mengacu pada metrik ConCISE), dan deteksi pola narasi STAR (Situation, Task, Action, Result).
-d. Sistem berfokus pada pemrosesan audio (suara) dan teks, serta tidak melakukan analisis visi komputer (Computer Vision) untuk mengevaluasi bahasa tubuh (body language) atau isyarat non-verbal visual.
+a. Sistem difokuskan pada format tunggal **Behavioral Event Interview (BEI)** terkalibrasi durasi ±15 menit (~7 pertanyaan inti) untuk lulusan baru (*fresh graduate*) pada bidang Teknologi Informasi dengan pemetaan maksimal 7 kompetensi inti Spencer & Spencer (1993): *Technical/Professional Expertise* (EXP), *Analytical Thinking* (AT), *Conceptual Thinking* (CT), *Achievement Orientation* (ACH), *Concern for Order* (CO), *Teamwork* (TW), dan *Initiative* (INT).
+b. Arsitektur interaksi suara menggunakan pendekatan *voice-to-voice* waktu nyata (*real-time*) yang dibangun menggunakan integrasi Google Gemini Multimodal Live API via Web Audio API.
+c. Pertanyaan wawancara strictly berorientasi pada peristiwa dan perilaku masa lalu kandidat (*Behavioral Event Interview*), tanpa pertanyaan hafalan teori buku dan tanpa skenario hipotetis abstrak.
+d. Algoritma evaluasi dan umpan balik (LLM-as-a-Judge) mengintegrasikan deteksi kerangka narasi STAR (*Situation, Task, Action, Result*), kedalaman pembuktian FACT (*Feeling/Focus, Action, Context/Consequence, Thinking*), kelugasan linguistik ConCISE (*Consistency, Clarity, Information, Structure, Effectiveness*), dan skor tingkat kemahiran kompetensi (Level 1–5).
+e. Sistem berfokus pada pemrosesan audio (suara) dan teks, serta tidak melakukan analisis visi komputer (*Computer Vision*) untuk mengevaluasi bahasa tubuh (*body language*) visual.
 
 1.4	Tujuan Penelitian
-Adapun tujuan dari setiap rumusan masalah yang telah disusun adalah:
-a. Merancang dan mengembangkan sistem simulasi wawancara kerja berbasis web yang menghadirkan interaksi voice-to-voice secara real-time dengan latensi rendah untuk meminimalkan jeda percakapan.
-b. Mengimplementasikan mekanisme cross-matching berbasis Retrieval-Augmented Generation (RAG) antara profil kualifikasi kandidat (CV) dan deskripsi pekerjaan (JD) guna menghasilkan skenario wawancara yang adaptif dan terpersonalisasi.
-c. Menerapkan metrik evaluasi yang objektif berbasis LLM-as-a-Judge (seperti ConCISE dan deteksi struktur STAR) untuk mengukur kelugasan komunikasi serta efektivitas penyampaian kandidat secara terotomatisasi.
+Adapun tujuan dari penelitian ini adalah:
+a. Merancang dan mengembangkan sistem simulasi wawancara kerja berbasis web yang menghadirkan interaksi *voice-to-voice* secara *real-time* dengan latensi rendah untuk meminimalkan jeda percakapan alami.
+b. Mengimplementasikan mekanisme ekstraksi dan pemetaan kompetensi Spencer & Spencer (1993) dari Job Description (JD) yang dicocokkan dengan CV kandidat guna menghasilkan pertanyaan BEI yang spesifik menggali bukti perilaku masa lalu.
+c. Menerapkan metrik evaluasi objektif berbasis LLM-as-a-Judge yang menggabungkan verifikasi STAR, kedalaman probing FACT, kelugasan ConCISE, dan penilaian skala kemahiran level kompetensi 1–5 secara terotomatisasi.
 
 1.5	Manfaat Penelitian
-Penelitian ini diharapkan dapat memberikan manfaat yang signifikan, baik secara teoritis maupun praktis:
+Penelitian ini diharapkan dapat memberikan manfaat yang signifikan:
 a. Manfaat Teoritis:
-   1. Memberikan kontribusi pada kajian literatur terkait penerapan arsitektur Multimodal Large Language Models (LLMs) dan Retrieval-Augmented Generation (RAG) dalam ranah simulasi pendidikan dan pengembangan karier profesional.
-   2. Menjadi acuan referensi metodologis dalam penerapan otomatisasi metrik penilaian kelugasan (ConCISE) dan deteksi struktural narasi (STAR) pada interaksi suara manusia ke mesin (Human-Computer Interaction).
+   1. Memberikan kontribusi pada kajian literatur terkait penerapan arsitektur Multimodal Large Language Models (LLMs) dalam simulasi wawancara berbasis kompetensi kerja (*Competency-Based Interview*).
+   2. Menjadi acuan metodologis dalam operasionalisasi Kamus Kompetensi Spencer & Spencer (1993) dan integrasi instrumen STAR + FACT serta metrik ConCISE pada interaksi suara kecerdasan buatan.
 b. Manfaat Praktis:
-   1. Bagi Lulusan Baru: Menyediakan lingkungan simulasi yang aman (safe-to-fail) dan terjangkau untuk mengurangi tingkat kecemasan serta meningkatkan efikasi diri kandidat sebelum menghadapi proses rekrutmen profesional di industri teknologi.
-   2. Bagi Institusi Pendidikan (UII): Dapat dimanfaatkan oleh pusat pengembangan karier universitas (Career Center) sebagai purwarupa (prototype) alat bantu pendampingan mahasiswa tingkat akhir dalam mempersiapkan lulusan yang kompetitif.
-   3. Bagi Praktisi Industri: Membantu menekan angka ketidakcocokan kualifikasi (skill mismatch) dari sisi kemampuan komunikasi teknis kandidat, sehingga mempercepat dan mengefisienkan tahapan seleksi rekrutmen di industri TI.
+   1. Bagi Lulusan Baru: Menyediakan lingkungan simulasi realistis yang aman (*safe-to-fail*) untuk mengasah keterampilan menjawab pertanyaan perilaku berbasis bukti nyata, mengurangi kecemasan wawancara, dan meningkatkan kesiapan kerja.
+   2. Bagi Institusi Pendidikan (UII): Sebagai prototipe alat bantu pusat karier universitas (*Career Center*) dalam pelatihan kerja mahasiswa berbasis standar HR modern.
+   3. Bagi Praktisi Industri: Membantu menyiapkan talenta TI yang mampu mengomunikasikan kompetensi analitis, pemecahan masalah, dan kerja sama tim secara terstruktur dan lugas.
 
 1.6	Metodologi Penelitian
-Penelitian ini menggunakan metodologi rekayasa perangkat lunak yang dikombinasikan dengan pendekatan evaluasi empiris untuk sistem kecerdasan buatan. Pendekatan ini dipilih untuk mengakomodasi kompleksitas pengembangan perangkat lunak terintegrasi AI (seperti pemrosesan audio streaming waktu nyata) yang menuntut proses perancangan sistematis dan validasi output secara terstruktur agar memenuhi standar rekrutmen profesional. Tahapan komprehensif yang dilakukan dalam penelitian ini meliputi:
+Penelitian ini menggunakan metodologi rekayasa perangkat lunak yang dikombinasikan dengan pendekatan evaluasi empiris kecerdasan buatan, meliputi tahapan:
 a. Pengumpulan Data dan Studi Pendahuluan (Requirements Gathering):
-   Tahap ini diawali dengan studi literatur mendalam terkait kesenjangan komunikasi lulusan TI dan fenomena kecemasan karier. Selanjutnya, dilakukan analisis kebutuhan sistem dengan mendefinisikan parameter evaluasi berdasarkan standar Human Resources (HR) profesional. Parameter tersebut mencakup deteksi kerangka wawancara STAR (Situation, Task, Action, Result) dan perumusan metrik ConCISE (Consistency, Clarity, Information, Structure, Effectiveness) yang akan diinjeksi sebagai logika penilaian (prompting logic) pada model AI.
+   Analisis literatur mengenai kesenjangan kompetensi lulusan TI, telaah Kamus Kompetensi Spencer & Spencer (1993), perumusan taksonomi 7 kompetensi inti TI, serta penyusunan parameter evaluasi HR berbasis STAR, FACT, dan ConCISE.
 b. Perancangan Sistem dan Arsitektur (System Design):
-   Tahap perancangan ini memetakan logika operasional sistem secara keseluruhan, yang terdiri dari:
-   1. Arsitektur Data (RAG): Merancang pipeline ekstraksi data terstruktur untuk melakukan pencocokan (cross-matching) antara dokumen CV pelamar dengan persyaratan spesifik pada Job Description (JD).
-   2. Arsitektur Audio: Merancang aliran data suara latensi rendah menggunakan Web Audio API, mencakup penangkapan raw PCM 16-24kHz, mekanisme Voice Activity Detection (VAD), dan pemfilteran frekuensi untuk memastikan interaksi suara dua arah yang mulus tanpa gangguan gema (echo).
-   3. Perancangan Antarmuka: Merancang alur pengguna (user flow) dan antarmuka web (UI/UX) yang intuitif.
+   1. Arsitektur Pemetaan Kompetensi: Pipeline ekstraksi Gemini untuk memetakan deskripsi pekerjaan (JD) ke 7 kompetensi Spencer & Spencer dan mencocokkannya (*cross-match*) dengan rekam jejak CV.
+   2. Arsitektur Audio Voice-to-Voice: Perancangan streaming audio bidireksional via Web Audio API (PCM 16–24kHz) dan Gemini Multimodal Live API dengan persona interviewer AI (Siti Rahayu) berprotokol BEI ketat.
+   3. Perancangan Antarmuka Pengguna: Antarmuka berbasis Next.js 15, React 19, dan Tailwind CSS v4.
 c. Implementasi dan Rekayasa Perangkat Lunak (Development):
-   Tahap konstruksi kode (coding) untuk membangun produk fungsional. Antarmuka sistem dibangun menggunakan framework Next.js 15, React 19, dan TypeScript. Untuk mesin kecerdasan buatan, sistem diintegrasikan secara native dengan Google Gemini Multimodal Live API guna menjalankan simulasi wawancara voice-to-voice waktu nyata, serta model Gemini Pro untuk menyusun laporan analitik dan evaluasi performa kandidat pasca-wawancara.
+   Konstruksi antarmuka dan modul backend: modul setup wawancara, modul live interview BEI berdurasi ~15 menit (~7 pertanyaan), modul LLM-as-a-Judge pasca-wawancara, serta modul bimbingan interaktif (*chat coaching* & latihan ulang suara).
 d. Pengujian dan Evaluasi (Testing and Validation):
-Tahap pengujian dilakukan secara komprehensif dan terukur untuk memastikan kualitas perangkat lunak (Ramadan et al., 2024):
-   1. Validasi Fungsionalitas: Menggunakan metode Black-box testing untuk menjamin bahwa seluruh alur kerja sistem, mulai dari unggah CV hingga cetak laporan, beroperasi dengan benar tanpa cacat fungsi (bug-free).
-   2. Pengujian Performa AI (Empirical Evaluation): Mengukur kecepatan respons interaksi suara (latency turnaround time) dengan target di bawah 1,5 detik untuk mempertahankan ilusi percakapan manusia. Selain itu, dilakukan pengujian akurasi LLM-as-a-Judge dalam mengidentifikasi komponen STAR pada transkrip obrolan.
-   3. Evaluasi Penerimaan Pengguna: Melakukan uji coba langsung (Beta Testing) kepada target responden (lulusan baru/mahasiswa tingkat akhir). Tingkat kepuasan, kemudahan penggunaan, dan penerimaan sistem kemudian diukur secara kuantitatif menggunakan instrumen pengujian System Usability Scale (SUS).
+   1. Validasi Fungsionalitas: Pengujian *Black-box testing* untuk memvalidasi alur kerja sistem.
+   2. Evaluasi Kinerja AI: Pengukuran latensi percakapan audio dan validasi akurasi penilaian LLM-as-a-Judge terhadap metrik STAR, FACT, ConCISE, dan level kompetensi.
+   3. Evaluasi Penerimaan Pengguna: Pengujian kebergunaan menggunakan instrumen *System Usability Scale* (SUS) kepada responden mahasiswa tingkat akhir / lulusan baru bidang TI.
 
 1.7	Sistematika Penulisan
-Sistematika penulisan yang digunakan dalam penyusunan laporan penelitian (skripsi) ini adalah sebagai berikut:
-BAB I PENDAHULUAN
-Bab ini berisi mengenai gambaran umum penyusunan skripsi yang meliputi latar belakang masalah, rumusan masalah, batasan masalah, tujuan penelitian, manfaat penelitian, metodologi penelitian, serta sistematika penulisan laporan penelitian.
-BAB II TINJAUAN PUSTAKA
-Bab ini membahas tinjauan penelitian terdahulu dan landasan teori utama yang mendukung penelitian. Topik bahasan meliputi konsep kecemasan karier, pemrosesan voice-to-voice latensi rendah (Web Audio API), Multimodal Large Language Models (LLM), mekanisme Retrieval-Augmented Generation (RAG), pedoman wawancara STAR, metrik evaluasi kelugasan (ConCISE), pendekatan LLM-as-a-Judge, metode Prototyping, hingga metode pengujian fungsionalitas (Black-Box) dan kebergunaan sistem (System Usability Scale).
-BAB III METODOLOGI PENELITIAN
-Bab ini menguraikan tahapan metode yang digunakan untuk membangun sistem simulasi wawancara, meliputi teknik pengumpulan data, prosedur analisis kebutuhan sistem, perancangan arsitektur integrasi API, perancangan basis data dan alur data, tahapan iterasi purwarupa, hingga skenario pengujian kualitas perangkat lunak. Penjelasan lebih teknis terkait tahap implementasi kode dan uji coba dipaparkan secara mendetail pada BAB IV.
-BAB IV HASIL DAN PEMBAHASAN
-Bab ini menjelaskan tentang hasil nyata dari pembangunan sistem yang telah dilakukan. Bagian ini memaparkan implementasi modul cross-matching profil pelamar kerja, evaluasi kinerja LLM-as-a-Judge dalam menghasilkan umpan balik (feedback) berbasis teks, pengukuran kecepatan interaksi verbal (latensi), serta interpretasi data hasil pengujian Black-Box dan perhitungan akhir nilai Usability Testing (SUS).
-BAB V SIMPULAN DAN SARAN
-Bab ini menyajikan sintesis dan simpulan akhir mengenai ketercapaian tujuan sistem berdasarkan rumusan masalah yang diajukan. Selain itu, bab ini memuat rekomendasi atau saran yang konstruktif bagi peneliti selanjutnya guna pengembangan dan perbaikan fungsionalitas sistem di masa yang akan datang.
- 
+Sistematika penulisan laporan skripsi ini adalah:
+BAB I PENDAHULUAN: Berisi latar belakang, rumusan masalah, batasan masalah, tujuan, manfaat, metodologi penelitian, dan sistematika penulisan.
+BAB II TINJAUAN PUSTAKA: Membahas teori kecemasan karier, model kompetensi Spencer & Spencer (1993), metode Behavioral Event Interview (BEI), framework narasi STAR dan instrumen FACT, metrik kelugasan ConCISE, arsitektur Multimodal LLM Voice-to-Voice, dan pengujian perangkat lunak.
+BAB III METODOLOGI PENELITIAN: Menguraikan perancangan sistem, alur pemetaan kompetensi, arsitektur Web Audio API dan Live API, skema evaluasi LLM-as-a-Judge, serta instrumen pengujian.
+BAB IV HASIL DAN PEMBAHASAN: Menyajikan hasil implementasi sistem simulasi BEI, visualisasi evaluasi kompetensi dan FACT, analisis latensi interaksi suara, hasil pengujian Black-Box, dan skor SUS.
+BAB V SIMPULAN DAN SARAN: Menyajikan sintesis pencapaian sistem dan rekomendasi pengembangan lanjutan.
 
-	DAFTAR PUSTAKA
+DAFTAR PUSTAKA
 
 Asyiah, S., & Nio, S. R. (2025). Karier Pada Fresh Graduate Yang Sedang Mencari. 3(1), 192–197.
 Bevara, R. V. K., Mannuru, N. R., Karedla, S. P., Lund, B., Xiao, T., Pasem, H., Dronavalli, S. C., & Rupeshkumar, S. (2025). Resume2Vec: Transforming Applicant Tracking Systems with Intelligent Resume Embeddings for Precise Candidate Matching. Electronics (Switzerland), 14(4), 1–18. https://doi.org/10.3390/electronics14040794
@@ -104,17 +102,7 @@ Ibrahim, I. D. K., Cahyaningrum, D., Hasany, T. D., Safitri, D., & Asri, N. W. A
 Khoiruddin, M. A., Setyanti, A. M., Suman, A., Prasetyia, F., & Susilo, S. (2024). Exploring Determinants of Education-Job Mismatch Among Educated Workers in Indonesia. Jurnal Ekonomi Pembangunan: Kajian Masalah Ekonomi Dan Pembangunan, 25(2), 263–281. https://doi.org/10.23917/jep.v25i2.23994
 Nursanti, E., & Andriyanti, E. (2021). Language identities of multilingual college english learners in Indonesia. Eurasian Journal of Applied Linguistics, 7(1), 316–337. https://doi.org/10.32601/ejal.911403
 Ramadan, M. N., Ramadhani, M. A. R., Handayani, C. T., Sulistiyani, E., & Budiarti, R. P. N. (2024). Implementation of Black Box Testing and System Usability Scale on the Nurul Huda Financial Recording Information System. Applied Technology and Computing Science Journal, 7(2). https://doi.org/10.33086/atcsj.v7i2.8365
+Spencer, L. M., & Spencer, S. M. (1993). Competence at Work: Models for Superior Performance. John Wiley & Sons, Inc.
 Syahri, A., Nabila, A. A., Warda, S., Izmi, U., & Subhan, M. (2025). Peran Bimbingan Dan Konseling Islam Dalam Mengurangi Tingkat Pengangguran Sarjana Di Indonesia: Analisis Terhadap Data Bps 2025. Jurnal Review Pendidikan Dan Pengajaran, 8(4), 8274–8283. https://doi.org/10.31004/jrpp.v8i4.51901
 Tan, F. (2025). YOGYAKARTA. 2(1), 363–381.
 Zibarras, L., Patterson, F., Holmes, J., Flaxman, C., & Kubacki, A. (2018). An exploration of applicant perceptions of asynchronous video MMIs in medical selection. MedEdPublish, 7, 285. https://doi.org/10.15694/mep.2018.0000285.1
-
-
-
-
-
-
-
-
-
- 
-

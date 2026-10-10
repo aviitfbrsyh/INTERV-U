@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CVData, JDData } from '@/lib/gemini-extraction';
 import { motion } from 'motion/react';
-import { Plus, Trash2, Save, User, Briefcase, GraduationCap, Code, FolderOpen, Award } from 'lucide-react';
+import { Plus, Trash2, Save, User, Briefcase, GraduationCap, Code, FolderOpen, Award, Target } from 'lucide-react';
 
 interface CVFormProps {
   data: CVData;
@@ -308,6 +308,51 @@ export function JDForm({ data, onChange }: JDFormProps) {
             />
           </div>
         </div>
+
+        {data.target_competencies && data.target_competencies.length > 0 && (
+          <div className="space-y-3 pt-6 border-t border-slate-800/80">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target size={16} className="text-blue-400" />
+                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest">
+                  Kompetensi yang Dibutuhkan (Spencer & Spencer)
+                </h4>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono px-2.5 py-0.5 rounded-full bg-slate-800/60 border border-slate-700/50">
+                {data.target_competencies.length} Kompetensi Terpetakan
+              </span>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {data.target_competencies.map((comp, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 space-y-1.5 transition-all hover:border-slate-700"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">
+                        {comp.code}
+                      </span>
+                      <span className="text-xs font-bold text-white tracking-tight">{comp.name}</span>
+                    </div>
+                    <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                      {comp.importance || 'Utama'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 leading-snug">
+                    {comp.rationale}
+                  </p>
+                  {comp.behavioral_focus && (
+                    <p className="text-[10px] text-blue-300/80 pt-1 border-t border-white/[0.04]">
+                      <span className="font-semibold text-blue-400">Fokus Bukti:</span> {comp.behavioral_focus}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

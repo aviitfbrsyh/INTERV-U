@@ -1,812 +1,332 @@
 # DOKUMENTASI LENGKAP PROYEK — INTERVYOUUU
 
-> Dokumen ini merangkum seluruh arsitektur, alur kerja, perilaku AI, dan detail teknis proyek Intervyouuu secara menyeluruh.
+> Dokumen ini merangkum seluruh arsitektur, alur kerja, perilaku AI, model kompetensi Spencer & Spencer, framework STAR + FACT, dan detail teknis proyek Intervyouuu secara menyeluruh.
 
 ---
 
 ## DAFTAR ISI
 
-1. [Gambaran Umum](#1-gambaran-umum)
-2. [Struktur Direktori](#2-struktur-direktori)
-3. [Alur Aplikasi (State Machine)](#3-alur-aplikasi-state-machine)
-4. [Kepribadian & Emosi AI — Siti Rahayu](#4-kepribadian--emosi-ai--siti-rahayu)
-5. [Alur Data Teknis](#5-alur-data-teknis)
-6. [Semua Komponen](#6-semua-komponen)
-7. [Library & Utilitas](#7-library--utilitas)
-8. [Model Data & Tipe](#8-model-data--tipe)
-9. [Konfigurasi & Environment](#9-konfigurasi--environment)
-10. [Desain & Sistem Styling](#10-desain--sistem-styling)
-11. [Deployment & Runtime](#11-deployment--runtime)
-12. [Keamanan & Privasi](#12-keamanan--privasi)
-13. [Insight Teknis Kunci](#13-insight-teknis-kunci)
+1. [Gambaran Umum & Landasan Metodologi](#1-gambaran-umum--landasan-metodologi)
+2. [Pemetaan Kompetensi Spencer & Spencer (1993)](#2-pemetaan-kompetensi-spencer--spencer-1993)
+3. [Struktur Direktori](#3-struktur-direktori)
+4. [Alur Aplikasi (State Machine)](#4-alur-aplikasi-state-machine)
+5. [Kepribadian & Protokol BEI AI — Siti Rahayu](#5-kepribadian--protokol-bei-ai--siti-rahayu)
+6. [Alur Data Teknis](#6-alur-data-teknis)
+7. [Semua Komponen](#7-semua-komponen)
+8. [Library & Utilitas](#8-library--utilitas)
+9. [Model Data & Tipe](#9-model-data--tipe)
+10. [Konfigurasi & Environment](#10-konfigurasi--environment)
+11. [Desain & Sistem Styling](#11-desain--sistem-styling)
+12. [Deployment & Runtime](#12-deployment--runtime)
+13. [Keamanan & Privasi](#13-keamanan--privasi)
+14. [Insight Teknis Kunci](#14-insight-teknis-kunci)
 
 ---
 
-## 1. GAMBARAN UMUM
+## 1. GAMBARAN UMUM & LANDASAN METODOLOGI
 
-**Intervyouuu** adalah platform simulasi wawancara kerja berbasis AI yang menggunakan Google Gemini untuk:
+**Intervyouuu** adalah platform simulasi wawancara kerja berbasis kecerdasan buatan (*AI Interview Simulator*) dengan interaksi suara dua arah waktu nyata (*real-time voice-to-voice*) yang dirancang khusus untuk mahasiswa tingkat akhir dan lulusan baru (*fresh graduate*) bidang Teknologi Informasi (TI).
 
-- Mengekstrak data CV dan Job Description secara terstruktur
-- Menjalankan wawancara kerja real-time via suara (voice-to-voice)
-- Menghasilkan evaluasi komprehensif pasca-wawancara
-
-Platform ini menempatkan kandidat berhadapan dengan **Siti Rahayu**, seorang interviewer AI dengan persona Director of Talent Acquisition berpengalaman 20 tahun, yang berinteraksi secara natural dalam Bahasa Indonesia.
+### Landasan Utama Revisi Skripsi (Standar Bu Rina):
+1. **Berbasis Kompetensi Kerja (Bukan Tugas Mentah JD)**:
+   Proses wawancara tidak lagi mengambil daftar tugas teknis mentah dari Job Description (JD), melainkan mengekstrak dan memetakan kompetensi perilaku yang dibutuhkan peran tersebut ke dalam **Kamus Kompetensi Spencer & Spencer (1993)**.
+2. **Mode Tunggal: Behavioral Event Interview (BEI)**:
+   Menghilangkan mode-mode wawancara umum (Personal, Pressure, Industrial). Sistem memusatkan simulasi pada satu format standar emas HR global: **Behavioral Event Interview (BEI)** yang dipandu oleh pewawancara AI tunggal, **Siti Rahayu** (Director of Talent Acquisition).
+3. **Pertanyaan Berorientasi Pengalaman Masa Lalu**:
+   Semua pertanyaan strictly menggali peristiwa riil yang pernah dialami kandidat (*"Ceritakan situasi saat..."*). Dilarang mengajukan pertanyaan teori buku / hafalan konseptual dan skenario hipotetis abstrak (*"Apa yang akan Anda lakukan jika..."*).
+4. **Metode Probing & Evaluasi STAR + FACT**:
+   Penggalian mendalam (*probing*) dan evaluasi menggabungkan kelengkapan narasi **STAR** (*Situation, Task, Action, Result*) dengan kedalaman verifikasi **FACT** (*Feeling/Focus, Action, Context/Consequence, Thinking*) serta metrik kelugasan **ConCISE**.
+5. **Kalibrasi Waktu & Pacing Wawancara**:
+   Durasi wawancara ditargetkan **±15 menit** dengan kuota **~7 pertanyaan substantif** (mencakup 7 kompetensi inti TI).
 
 **Stack Teknologi:**
 - Framework: Next.js 15 (React 19)
-- AI Engine: Google Gemini API (`@google/genai`)
-- Audio: Web Audio API (native browser)
-- Styling: Tailwind CSS v4
-- Animasi: Framer Motion (`motion`)
-- Markdown: `react-markdown` + `remark-gfm`
-- Icons: `lucide-react`
+- AI Engine: Google Gemini Multimodal Live API (`@google/genai`) & Gemini 3 Flash / Pro
+- Audio: Web Audio API (native browser 24kHz PCM)
+- Styling: Tailwind CSS v4 & Lucide React
+- Animasi: Motion (Framer Motion v12)
+- Markdown & Laporan: `react-markdown`, `remark-gfm`, PDF Generator
 
 ---
 
-## 2. STRUKTUR DIREKTORI
+## 2. PEMETAAN KOMPETENSI SPENCER & SPENCER (1993)
+
+Mengacu pada *Competence at Work* (Spencer & Spencer, 1993), performa unggul (*superior performance*) dipetakan ke dalam 7 kompetensi inti untuk 4 peran utama TI (Frontend, Backend, QA/Tester, DevOps/Cloud):
+
+| No | Kode | Nama Kompetensi | Definisi / Indikator Perilaku | Skala Level (1–5) |
+|---|---|---|---|---|
+| 1 | **EXP** | Technical / Professional Expertise | Penguasaan pengetahuan teknis mendalam dan penerapannya dalam menyelesaikan masalah rekayasa nyata. | Level 1 (Dasar) s.d. Level 5 (Otoritas teknis / arsitektural) |
+| 2 | **AT** | Analytical Thinking | Kemampuan mengurai masalah kompleks menjadi komponen logis, menemukan akar masalah (*root cause*), dan menganalisis implikasi. | Level 1 (Mengamati pola) s.d. Level 5 (Model analitis multi-dimensi) |
+| 3 | **CT** | Conceptual Thinking | Kemampuan mengenali pola tersembunyi, menghubungkan konsep abstrak, dan merumuskan solusi arsitektural inovatif. | Level 1 (Melihat analogi) s.d. Level 5 (Menciptakan paradigma arsitektur baru) |
+| 4 | **ACH** | Achievement Orientation | Dorongan bekerja melebihi standar keunggulan, menetapkan sasaran menantang, dan meningkatkan performa sistem/bisnis. | Level 1 (Fokus standar kerja) s.d. Level 5 (Inisiatif bisnis bernilai strategis tinggi) |
+| 5 | **CO** | Concern for Order, Quality and Accuracy | Komitmen terhadap ketepatan, kualitas kode, pengujian ketat (*zero bug*), dan dokumentasi yang rapi. | Level 1 (Kerapian dasar) s.d. Level 5 (Membangun sistem jaminan mutu organisasi) |
+| 6 | **TW** | Teamwork and Cooperation | Kemampuan berkolaborasi secara produktif, berbagi pengetahuan (*code review*), dan menyelesaikan konflik tim. | Level 1 (Kerja sama pasif) s.d. Level 5 (Membangun sinergi lintas fungsi dan tim) |
+| 7 | **INT** | Initiative | Proaktif mengantisipasi masalah di masa depan, mengambil tindakan mandiri tanpa disuruh, dan mencegah kegagalan sistem. | Level 1 (Respons cepat) s.d. Level 5 (Inisiatif jangka panjang 6–12 bulan ke depan) |
+
+---
+
+## 3. STRUKTUR DIREKTORI
 
 ```
 intervyouuu/
 ├── app/
-│   ├── layout.tsx               ← Root layout, metadata, fonts, fetch protection
-│   ├── page.tsx                 ← Landing page + state machine utama
-│   └── globals.css              ← Global Tailwind styles & utility classes
+│   ├── api/
+│   │   ├── coaching/route.ts        ← Bimbingan Siti (chat, TTS highlight, latihan suara retry)
+│   │   ├── cross-match/route.ts     ← Pencocokan CV vs target kompetensi Spencer & Spencer
+│   │   ├── evaluate/route.ts        ← Evaluasi LLM-as-a-Judge (STAR + FACT + ConCISE + Level 1–5)
+│   │   └── extract/route.ts         ← Ekstraksi CV dan JD ke Spencer & Spencer target competencies
+│   ├── layout.tsx                   ← Root layout, font, metadata
+│   ├── page.tsx                     ← State machine utama (landing, setup, interview, evaluation)
+│   └── globals.css                  ← Tailwind utility classes & tokens
 │
 ├── components/
-│   ├── InterviewSetup.tsx       ← Upload CV/JD, ekstraksi data, review
-│   ├── LiveInterview.tsx        ← Wawancara suara real-time dengan Gemini
-│   ├── InterviewEvaluation.tsx  ← Laporan evaluasi pasca-wawancara
-│   └── StructuredDataForm.tsx   ← Form edit data CV dan JD terstruktur
+│   ├── CoachingLive.tsx             ← Konsultasi suara live real-time pasca wawancara
+│   ├── InterviewEvaluation.tsx      ← Laporan visual evaluasi (Kompetensi, FACT, STAR, ConCISE)
+│   ├── InterviewSetup.tsx           ← Form upload CV/JD, pemetaan BEI, profil Siti Rahayu
+│   ├── LiveInterview.tsx            ← Sesi voice-to-voice BEI 15 menit dengan Gemini Live API
+│   └── StructuredDataForm.tsx       ← Form review/edit data CV & target kompetensi JD
 │
-├── hooks/
-│   └── use-mobile.ts            ← Hook responsivitas mobile (<768px)
+├── contexts/
+│   ├── kamus-kompetensi-sp-sp.md    ← Salinan lengkap 20 kamus kompetensi Spencer & Spencer (1993)
+│   └── pemetaan-kompetensi-it.md    ← Matriks pemetaan 7 kompetensi inti untuk 4 peran TI
 │
 ├── lib/
-│   ├── gemini-extraction.ts     ← Ekstraksi CV/JD via Gemini, retry logic
-│   ├── audio-manager.ts         ← Manajemen mikrofon & playback audio
-│   ├── utils.ts                 ← cn() — merge Tailwind class names
-│   └── empty-fetch-polyfill.js  ← Stub polyfill untuk melindungi native fetch
+│   ├── audio-manager.ts             ← AudioContext, capture PCM 24kHz, filter Biquad
+│   ├── coaching-chat.ts             ← Client library chat coaching Siti
+│   ├── cross-match.ts               ← Client interface cross-matching CV-JD
+│   ├── evaluate.ts                  ← Model data & runner evaluasi LLM-as-a-Judge
+│   ├── filler-words.ts              ← Deteksi 17 pola filler word Indonesia otomatis
+│   ├── gemini-extraction.ts         ← Skema ekstraksi CVData & JDData
+│   ├── gemini-tts.ts                ← Generator speech & coaching highlight Siti
+│   ├── generate-report.ts           ← Ekspor PDF laporan evaluasi lengkap
+│   ├── practice-retry.ts            ← Runner latihan ulang rekaman jawaban
+│   └── voice-transcribe.ts          ← Transkripsi suara latihan via Gemini
 │
-├── .env.local                   ← NEXT_PUBLIC_GEMINI_API_KEY (tidak di-commit)
-├── .env.example                 ← Contoh variabel environment
-├── next.config.ts               ← Konfigurasi Next.js (standalone, turbopack)
-├── package.json                 ← Dependencies & scripts
-├── tsconfig.json                ← Konfigurasi TypeScript
-├── postcss.config.mjs           ← PostCSS / Tailwind config
-├── metadata.json                ← Metadata app untuk AI Studio
-├── eslint.config.mjs            ← ESLint config
-└── README.md                    ← Panduan setup
+├── DRAFSKRIPSI.MD                   ← Naskah draf skripsi (Bab I–V & Daftar Pustaka)
+└── DOKUMENTASI_PROYEK.md            ← Dokumen ini
 ```
 
 ---
 
-## 3. ALUR APLIKASI (STATE MACHINE)
-
-Aplikasi memiliki 4 state utama yang dikelola di `app/page.tsx`:
+## 4. ALUR APLIKASI (STATE MACHINE)
 
 ```
 ┌─────────────┐
-│   landing   │  ← Halaman utama (hero, fitur, pricing, FAQ)
-└──────┬──────┘
-       │ Klik "Mulai Interview" / "Coba Gratis"
-       ▼
-┌─────────────┐
-│    setup    │  ← Upload/paste CV & JD → Ekstraksi → Review data
+│   landing   │  ← Pengenalan platform, metode BEI, dan profil Siti Rahayu
 └──────┬──────┘
        │ Klik "Mulai Wawancara"
        ▼
 ┌─────────────┐
-│  interview  │  ← Wawancara suara real-time dengan Siti Rahayu
-└──────┬──────┘
-       │ Klik tombol Hang Up
+│    setup    │  ← Upload CV & JD → Ekstraksi ke 7 Kompetensi Spencer & Spencer
+└──────┬──────┘  ← Cross-matching CV vs Target Kompetensi → Review Form
+       │ Klik "Mulai Simulasi Wawancara"
+       ▼
+┌─────────────┐
+│  interview  │  ← Simulasi Voice-to-Voice BEI (±15 menit / ~7 pertanyaan)
+└──────┬──────┘  ← Probing STAR + FACT oleh Siti Rahayu
+       │ Klik "Akhiri Sesi" / Waktu Habis
        ▼
 ┌──────────────┐
-│  evaluation  │  ← Laporan evaluasi lengkap berbasis AI
-└──────┬───────┘
-       │ Klik "Interview Lagi"
+│  evaluation  │  ← Laporan Evaluasi Komprehensif:
+└──────┬───────┘    - Nilai Keseluruhan & Rekomendasi
+       │            - Evaluasi 7 Kompetensi Spencer & Spencer (Level 1–5)
+       │            - Metrik Agregat FACT (Kedalaman Probing)
+       │            - Metrik Agregat STAR & ConCISE
+       │            - Analisis Per Pertanyaan (Evidence, Suggestion, Hack)
+       │            - Tanya Siti (Chat / Voice) & Latihan Ulang Jawaban
+       │ Klik "Mulai Ulang"
        ▼
      setup (kembali)
 ```
 
-**State Variables di page.tsx:**
-
-| Variabel   | Tipe   | Keterangan                                   |
-|------------|--------|----------------------------------------------|
-| `state`    | string | State saat ini: landing / setup / interview / evaluation |
-| `cvText`   | string | JSON string dari CVData (atau teks mentah)   |
-| `jdText`   | string | JSON string dari JDData (atau teks mentah)   |
-| `history`  | string | Transkripsi percakapan dari sesi wawancara   |
-
-**Handler Functions:**
-
-| Fungsi               | Deskripsi                                    |
-|----------------------|----------------------------------------------|
-| `handleStart(cv, jd)`| Pindah ke state `interview` dengan data CV/JD |
-| `handleEnd(history)` | Pindah ke state `evaluation` dengan riwayat  |
-| `handleReset()`      | Kembali ke state `setup`                     |
-
 ---
 
-## 4. KEPRIBADIAN & EMOSI AI — SITI RAHAYU
+## 5. KEPRIBADIAN & PROTOKOL BEI AI — SITI RAHAYU
 
 ### Profil Karakter
+- **Nama**: Siti Rahayu
+- **Jabatan**: Director of Talent Acquisition (20 tahun pengalaman di industri TI global)
+- **Karakter**: Hangat, tajam, profesional, berbasis bukti perilaku nyata
+- **Suara**: "Aoede" (Google Gemini Live API)
 
-| Atribut        | Detail                                   |
-|----------------|------------------------------------------|
-| **Nama**       | Siti Rahayu                              |
-| **Jabatan**    | Director of Talent Acquisition           |
-| **Pengalaman** | 20 tahun di perusahaan Fortune 500       |
-| **Bahasa**     | Indonesia semi-formal, natural & hangat  |
-| **Suara**      | "Aoede" — Google Gemini built-in voice   |
-
-### Dimensi Kepribadian
-
-**Profesionalisme:**
-Siti adalah interviewer yang tajam dan berpengalaman. Ia mengenali jawaban klise seketika dan tidak segan-segan menggali lebih dalam dengan pertanyaan lanjutan. Ia tidak mencari jawaban "benar" — ia mencari kejujuran dan kedalaman berpikir.
-
-**Kehangatan:**
-Meski tegas, Siti tidak dingin. Ia membuka wawancara dengan salam yang tulus dan menunjukkan bahwa ia sudah benar-benar membaca CV kandidat. Ia menghargai jawaban yang terstruktur dan tidak ragu memberikan respons positif.
-
-**Empati:**
-Siti memahami bahwa wawancara kerja adalah situasi yang menegangkan. Ia memberikan ruang bagi kandidat untuk berpikir dan tidak terburu-buru memotong.
-
-### Filosofi Wawancara
-
-1. **Tidak mencari jawaban "benar"** — Mengutamakan kejujuran dan kedalaman berpikir kritis
-2. **Menggunakan kerangka STAR** — Mengevaluasi Situation, Task, Action, Result
-3. **Skeptis terhadap klise** — Menantang jawaban generik dengan probing questions
-4. **Mendengar sampai selesai** — Tidak pernah memotong kandidat yang sedang berbicara
-5. **Conversational tapi profesional** — Gaya bicara semi-formal dalam Bahasa Indonesia
-
-### Aturan Perilaku Utama (System Instruction)
-
-**Kepemimpinan Percakapan:**
-- Siti yang MEMBUKA wawancara (tidak menunggu kandidat)
-- Ia memegang kendali alur percakapan
-- Hanya mengajukan SATU pertanyaan per giliran bicara
-
-**Protokol Mendengarkan:**
-- WAJIB mendengarkan jawaban kandidat hingga SELESAI
-- Boleh memberikan acknowledgment di tengah jawaban: "Hmm", "Iya", "Oke" — ini bukan interupsi
-- Membedakan antara:
-  - **Interupsi nyata**: Kandidat berbicara saat kalimat Siti belum selesai
-  - **Pergantian giliran normal**: Kandidat menjawab setelah Siti selesai bertanya
-
-**Pola Respons:**
-
-```
-1. Acknowledgment poin kunci yang disebutkan kandidat
-2. [Jeda sejenak — seolah mencatat]
-3. Pertanyaan lanjutan atau pertanyaan berikutnya
-4. Probing jika jawaban terlalu singkat
-5. Apresiasi jika jawaban terstruktur
-6. Tambahkan conversational fillers untuk nuansa realistis
-```
-
-### Respons Emosional Berdasarkan Situasi
-
-**Pembukaan (Warm & Professional):**
-```
-"Selamat pagi, saya Siti Rahayu. Terima kasih sudah hadir hari ini.
-Saya sudah meninjau resume Anda yang cukup menarik, dan saya
-ingin kita mulai dengan pertanyaan sederhana..."
-```
-
-**Merespons Jawaban Baik:**
-```
-"Saya menangkap bahwa Anda menyebutkan [poin A] dan [poin B].
-Menarik sekali sudut pandangnya. Bisa Anda ceritakan lebih detail
-mengenai bagaimana Anda menghadapi situasi tersebut?"
-```
-
-**Merespons Jawaban Klise (Skeptis):**
-```
-"Hmm... 'saya seorang perfeksionisme' adalah jawaban yang sering
-saya dengar. Bisa Anda berikan satu contoh konkret situasi di mana
-sifat itu justru menjadi hambatan untuk Anda?"
-```
-
-**Fillers Manusiawi:**
-- "Hmm...", "Oke, saya mengerti poinnya..."
-- "Ah, menarik sekali sudut pandangnya."
-- "Baik, saya catat itu."
-- "Interesting perspective, tapi saya ingin menggali lebih dalam..."
-- "I note that..." (kadang campur Inggris untuk nuansa Fortune 500)
-
-**Sensitivitas Interupsi:**
-- TIDAK bereaksi negatif terhadap:
-  - Kandidat mengangguk verbal ("Hmm", "Iya", "Oke") saat Siti berbicara
-  - Turn-taking normal setelah Siti selesai bertanya
-  - Jawaban panjang (Siti menunggu sampai benar-benar selesai)
-- HANYA bereaksi terhadap interupsi di tengah kalimat Siti
+### Protokol Wawancara BEI yang Ditegakkan:
+1. **Wajib Format BEI**: Semua pertanyaan harus berupa *"Ceritakan situasi saat Anda..."* atau *"Bisa berikan contoh nyata ketika Anda..."*.
+2. **Dilarang Pertanyaan Teori**: Tidak menanyakan hafalan teori (misal: *"Apa perbedaan SQL dan NoSQL?"* atau *"Jelaskan konsep OOP"*). Pertanyaan teknis harus berwujud penerapan: *"Ceritakan pengalaman Anda saat memilih database NoSQL, apa pertimbangan teknisnya dan kendala apa yang muncul?"*.
+3. **Dilarang Skenario Hipotetis**: Tidak menanyakan *"Apa yang akan Anda lakukan jika server down?"*. Melainkan: *"Pernahkah Anda mengalami insiden server down saat produksi? Ceritakan apa peran dan tindakan Anda saat itu."*.
+4. **Probing Mendalam (STAR + FACT)**:
+   - **Feeling / Focus**: Menggali emosi, motivasi, dan kendali diri (*"Apa yang Anda rasakan saat itu?"*).
+   - **Action**: Memastikan aksi diri sendiri, bukan hanya tim (*"Apa tindakan spesifik yang ANDA ambil secara pribadi?"*).
+   - **Context / Consequence**: Menanyakan dampak terukur (*"Apa dampak dari tindakan tersebut pada performa sistem?"*).
+   - **Thinking**: Menggali alur logika pengambilan keputusan (*"Apa pertimbangan utama Anda saat memutuskan opsi tersebut?"*).
+5. **Pacing 15 Menit**: Pacing dikalibrasi untuk mengajukan ~7 pertanyaan substantif yang mencakup 7 kompetensi inti Spencer & Spencer, diakhiri dengan penutupan profesional.
 
 ---
 
-## 5. ALUR DATA TEKNIS
+## 6. ALUR DATA TEKNIS
 
-### Fase 1 — Setup & Ekstraksi Data
+### Fase 1 — Setup & Ekstraksi Kompetensi
+1. Kandidat mengunggah CV dan Job Description (teks atau file PDF/gambar).
+2. Endpoint `/api/extract` menggunakan `gemini-3-flash-preview` dengan JSON Schema untuk mengekstrak kualifikasi CV dan memetakan deskripsi pekerjaan menjadi `target_competencies` berdasarkan Kamus Spencer & Spencer (1993).
+3. Endpoint `/api/cross-match` mencocokkan rekam jejak CV dengan target kompetensi, mendeteksi kekuatan dan kesenjangan kompetensi (*competency gaps*).
+4. Kandidat dapat meninjau dan mengedit data terstruktur pada `StructuredDataForm`.
 
-```
-User upload file (PDF/gambar) atau paste teks CV/JD
-              ↓
-  extractCV() / extractJD()
-  [lib/gemini-extraction.ts]
-              ↓
-  Gemini Flash 3 API
-  Model: gemini-3-flash-preview
-  Config: responseMimeType = "application/json"
-          responseSchema = CVData/JDData schema
-              ↓
-  Objek CVData / JDData terstruktur
-              ↓
-  Ditampilkan di StructuredDataForm untuk review/edit
-              ↓
-  handleFinalStart() → JSON.stringify(cvData) + JSON.stringify(jdData)
-              ↓
-  Dikirim sebagai string ke LiveInterview component
-```
+### Fase 2 — Simulasi Voice-to-Voice BEI
+1. Komponen `LiveInterview` menginisialisasi sesi WebSocket dengan Gemini Live API (`gemini-2.0-flash-live-001`).
+2. `systemInstruction` menginjeksikan profil kandidat, Job Description, target kompetensi Spencer & Spencer, serta protokol ketat BEI dan panduan pacing 15 menit.
+3. Audio streaming bidireksional ditangani secara natif via Web Audio API (PCM 24kHz) dengan Voice Activity Detection (VAD) jeda 1800ms.
+4. Transkrip tanya-jawab diakumulasikan secara aman di memori client (`historyRef`).
 
-**Retry Logic Ekstraksi:**
-- 4 kali retry dengan exponential backoff
-- Delay awal: 1000ms → 2000ms → 4000ms → 8000ms
-- Hanya retry untuk error 503 (Service Unavailable)
+### Fase 3 — Evaluasi LLM-as-a-Judge Pasca Wawancara
+1. Endpoint `/api/evaluate` memproses transkrip lengkap bersama data CV dan target kompetensi.
+2. Model mengevaluasi setiap pasang tanya-jawab:
+   - **STAR Detection**: Situation, Task, Action, Result (skor 0–4 dan bukti kutipan).
+   - **FACT Probing**: Feeling, Action, Context, Thinking (skor per pilar /10 dan total /40).
+   - **Spencer & Spencer Leveling**: Penentuan tingkat kemahiran (Level 1–5) dan catatan perilaku nyata.
+   - **ConCISE Metrics**: Consistency, Clarity, Information, Structure, Effectiveness (total /50).
+   - **Filler Word Detection**: 17 pola kata pengisi Bahasa Indonesia terdeteksi otomatis.
+   - **Candidate Archetype**: Profil komunikasi kandidat (*Articulate Architect*, *Rambling Expert*, dll.).
+   - **Rekomendasi Final**: Recommended, Conditional, Not Recommended beserta saran konkret.
+3. Hasil evaluasi dapat diunduh langsung menjadi dokumen resmi PDF via `generateEvaluationReport`.
 
 ---
 
-### Fase 2 — Wawancara Suara Real-Time
-
-```
-LiveInterview component mount
-              ↓
-  Inisialisasi AudioManager (AudioContext 24kHz)
-              ↓
-  Koneksi ke Gemini Live API
-  Model: gemini-2.0-flash-live-001 (atau gemini-3.1-flash-live-preview)
-              ↓
-  Setup session config:
-  - System instruction: persona Siti Rahayu + CV + JD
-  - Voice: "Aoede"
-  - VAD sensitivity: LOW
-  - Silence duration: 1800ms
-              ↓
-  Kirim trigger tersembunyi: "Mulai wawancara..."
-              ↓
-  Gemini generate audio pembukaan Siti
-              ↓
-  Tunggu sinyal `turnComplete`
-              ↓ (atau timeout 15 detik sebagai fallback)
-  Mulai capture mikrofon (AudioManager.startMicrophone)
-              ↓
-
-  LOOP PERCAKAPAN:
-  ┌─────────────────────────────────────────────┐
-  │  User berbicara                             │
-  │  → Mic capture PCM (Float32 → Int16)        │
-  │  → Base64 encode                            │
-  │  → Kirim ke Gemini Live API                 │
-  │  → VAD deteksi akhir ucapan (1800ms silent) │
-  │  → Gemini proses audio + context             │
-  │  → Stream audio response (base64 PCM)       │
-  │  → AudioManager decode & play              │
-  │  → High-shelf filter (3kHz, +4dB clarity)   │
-  │  → Transkripsi disimpan ke historyRef       │
-  │  → Tunggu turnComplete                      │
-  │  → User giliran berbicara lagi              │
-  └─────────────────────────────────────────────┘
-
-  User klik Hang Up
-              ↓
-  session.close() + AudioManager.close()
-              ↓
-  History dikirim ke parent → state 'evaluation'
-```
-
-**Konfigurasi Audio:**
-
-| Parameter       | Nilai                          |
-|-----------------|-------------------------------|
-| Sample Rate     | 24,000 Hz (24kHz)             |
-| Voice           | "Aoede" (Google Gemini)       |
-| VAD Sensitivity | LOW                            |
-| Silence Timeout | 1800ms (1.8 detik)            |
-| Filter          | High-shelf 3kHz, +4dB        |
-| Format          | PCM Int16, Base64-encoded     |
-
----
-
-### Fase 3 — Evaluasi Pasca-Wawancara
-
-```
-History string (semua percakapan AI & User)
-              ↓
-  InterviewEvaluation component mount
-              ↓
-  Gemini API request
-  Model: gemini-2.5-pro-preview / gemini-3.1-pro-preview
-  Prompt: CVData + JDData + conversation history + instruksi evaluasi
-              ↓
-  Respons: Markdown terstruktur berisi:
-  ┌──────────────────────────────────────────┐
-  │ 1. Skor keseluruhan (1-100)              │
-  │ 2. Analisis kriteria:                    │
-  │    - Technical Skill                     │
-  │    - Emotional Intelligence (EQ)         │
-  │    - Communication                       │
-  │    - Culture Fit                         │
-  │ 3. Top 3+ Kekuatan                       │
-  │ 4. 3+ Kelemahan & area pengembangan      │
-  │ 5. Feedback per pertanyaan               │
-  │ 6. Rekomendasi final (Hire/No Hire/Wait) │
-  └──────────────────────────────────────────┘
-              ↓
-  ReactMarkdown render dengan custom styling
-              ↓
-  Sidebar: Recommendation box + Area of Focus box
-```
-
----
-
-## 6. SEMUA KOMPONEN
-
-### A. `app/page.tsx` — Shell Utama Aplikasi
-
-**Tanggung Jawab:**
-- Halaman landing dengan hero, fitur, pricing, FAQ
-- State machine yang mengontrol 4 fase aplikasi
-- Navigasi antar state
-
-**Seksi Landing Page:**
-
-| Seksi               | Deskripsi                                            |
-|---------------------|------------------------------------------------------|
-| Navigation          | Nav bar dengan CTA buttons                           |
-| Hero                | Headline utama + highlight fitur                     |
-| Bento Grid Fitur    | Deep Extraction, Voice Live, Divine Evaluation       |
-| How It Works        | 3-step process visual                                |
-| Persona Card        | Perkenalan Siti Rahayu + badge "20 Tahun Pengalaman" |
-| Pricing             | Free / Professional Rp99k/bln / Elite Rp299k seumur hidup |
-| FAQ                 | 4 pertanyaan umum                                    |
-| Footer              | Link dan informasi copyright                         |
-
----
-
-### B. `components/InterviewSetup.tsx` — Setup Wawancara
-
-**Tanggung Jawab:**
-- Pengumpulan input CV dan Job Description
-- Upload file atau paste teks
-- Ekstraksi data via Gemini
-- Review dan edit data sebelum wawancara
-
-**2-Step Process:**
-
-```
-Step 1: Input
-├── Toggle paste / upload untuk CV
-├── Toggle paste / upload untuk JD
-├── File upload: PDF, gambar
-└── Tombol "Ekstrak & Analisis" → loading overlay
-
-Step 2: Review
-├── CVForm — edit data CV terstruktur
-├── JDForm — edit data JD terstruktur
-└── Tombol "Mulai Wawancara"
-```
-
-**Indikator Status Ekstraksi:**
-- Loading spinner saat proses berjalan
-- Checkmark hijau jika berhasil
-- Error message jika gagal
-
----
-
-### C. `components/LiveInterview.tsx` — Wawancara Langsung
-
-**Tanggung Jawab:**
-- Mengelola percakapan suara dua arah dengan Gemini
-- Menangani input mikrofon dan output speaker
-- Menampilkan UI visual selama wawancara
-- Menyimpan transkripsi percakapan
-- Mengelola lifecycle sesi
-
-**State Internal:**
-
-| State           | Tipe    | Deskripsi                                  |
-|-----------------|---------|--------------------------------------------|
-| `status`        | string  | connecting / active / ending               |
-| `isMuted`       | boolean | Toggle mute mikrofon                       |
-| `isAiSpeaking`  | boolean | Indikator visual saat Siti berbicara       |
-| `transcriptions`| array   | 5 pertukaran terakhir user ↔ AI            |
-| `error`         | string  | Pesan error + tombol retry                 |
-
-**Layout UI (Bento Grid 12-kolom):**
-
-| Area                    | Kolom     | Konten                                        |
-|-------------------------|-----------|-----------------------------------------------|
-| Call Interface (besar)  | col-span-8| Waveform, nama Siti, transkripsi              |
-| Job Context Card        | col-span-4| Judul posisi, tags (ANALISIS, SKILL GAP, Live)|
-| Live Evaluation         | col-span-4| Status percakapan + progress bar              |
-| Control Card            | col-span-3| Tombol toggle mikrofon                        |
-| Live Insights           | col-span-6| Kotak analisis real-time                      |
-| AI Engine Badge         | col-span-3| Label "Multimodal Live"                       |
-
-**Pencegahan Bug Double-Voice:**
-- Mikrofon TIDAK langsung aktif saat komponen mount
-- Menunggu sinyal `turnComplete` dari Gemini (setelah greeting Siti)
-- Jika tidak ada sinyal dalam 15 detik → fallback aktifkan mikrofon
-- `cancellationFlag` mencegah callback async yang yatim
-
----
-
-### D. `components/InterviewEvaluation.tsx` — Laporan Evaluasi
-
-**Tanggung Jawab:**
-- Generate evaluasi komprehensif setelah wawancara
-- Menampilkan hasil dalam format laporan profesional
-- Memberikan insight actionable dan rekomendasi
-
-**Layout Halaman:**
-
-```
-┌─────────────────────────────────────────────────┐
-│ Header: Ikon trophy, status, Save PDF / Retry   │
-├──────────────────────────┬──────────────────────┤
-│                          │ Sidebar:             │
-│  Main Report:            │ - Recommendation box │
-│  - Score (1-100)         │   (hijau)           │
-│  - Criteria Table        │ - Area of Focus box  │
-│  - Strengths             │   (amber)           │
-│  - Weaknesses            │ - Session metadata   │
-│  - Per-question feedback │   (durasi, sentimen) │
-│  - Final recommendation  │                      │
-└──────────────────────────┴──────────────────────┘
-```
-
-**Custom Styling Markdown:**
-- Tabel dengan tema biru
-- List items sebagai bordered cards
-- Aksen warna: hijau, amber, biru
-- Prose utilities untuk rendering yang bersih
-
----
-
-### E. `components/StructuredDataForm.tsx` — Form Data Terstruktur
-
-**Tanggung Jawab:**
-- Form editable untuk CVData dan JDData
-- Memungkinkan pengguna menyesuaikan data yang diekstrak secara manual
-
-**CVForm — Seksi:**
-
-| Seksi            | Input Type              | Icon Color |
-|------------------|-------------------------|------------|
-| Personal Profile | name, email, phone, loc | Biru       |
-| Experience       | role, company, duration, responsibilities[] | Emerald |
-| Education        | degree, institution, year | Kuning   |
-| Projects         | name, description       | Pink       |
-| Skills           | textarea (comma/newline) | Ungu      |
-| Certifications   | textarea (comma/newline) | Biru      |
-
-**JDForm — Seksi:**
-
-| Seksi             | Input Type |
-|-------------------|------------|
-| Role Name         | Large input|
-| Requirements      | Textarea   |
-| Responsibilities  | Textarea   |
-
-**Fitur:**
-- Add/remove buttons untuk seksi berulang
-- Responsive grid layout
-- Icon berwarna per seksi
-
----
-
-## 7. LIBRARY & UTILITAS
-
-### `lib/gemini-extraction.ts`
-
-**Fungsi Utama:**
-
-```typescript
-extractCV(input: string | File): Promise<CVData>
-extractJD(input: string | File): Promise<JDData>
-withRetry<T>(fn: () => Promise<T>, retries: number, delayMs: number): Promise<T>
-```
-
-**Model:** `gemini-3-flash-preview`
-
-**Mekanisme:**
-- `responseMimeType: "application/json"` — memaksa respons JSON
-- `responseSchema` — mendefinisikan struktur CVData/JDData secara eksplisit
-- Mendukung input teks dan file (PDF/gambar sebagai inline data)
-- Retry dengan exponential backoff untuk error 503
-
----
-
-### `lib/audio-manager.ts`
-
-**Class: AudioManager**
-
-**Constructor:** `new AudioManager(sampleRate: number)`
-
-**Methods:**
-
-| Method                          | Deskripsi                                             |
-|---------------------------------|-------------------------------------------------------|
-| `initialize()`                  | Setup AudioContext, resume jika suspended             |
-| `startMicrophone(callback)`     | Minta izin mic, buat ScriptProcessor, panggil callback per chunk |
-| `stopMicrophone()`              | Hentikan stream mic dan bersihkan nodes              |
-| `playPCM(base64Data: string)`   | Decode base64 PCM, filter, play via AudioContext     |
-| `stopAllPlayback()`             | Hentikan semua audio source yang aktif               |
-| `close()`                       | Cleanup total (mic + context + sumber aktif)         |
-
-**Audio Processing Pipeline:**
-
-```
-Mikrofon Input
-    → Float32Array (dari ScriptProcessor)
-    → Konversi ke Int16 (normalisasi × 32767)
-    → Base64 encode
-    → Kirim ke Gemini Live API
-
-Gemini Audio Output
-    → Base64 decode
-    → Int16 → Float32 decode
-    → BiquadFilter (high-shelf 3kHz, +4dB)
-    → AudioBufferSourceNode
-    → Speakers
-```
-
----
-
-### `lib/utils.ts`
-
-```typescript
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
-}
-```
-
-Menggabungkan class Tailwind CSS tanpa konflik (e.g., `p-4` + `p-8` → `p-8`).
-
----
-
-### `lib/empty-fetch-polyfill.js`
-
-Melindungi `window.fetch` native dari overwrite oleh polyfill packages.
-Di-alias via Turbopack/Webpack configuration di `next.config.ts`.
-
----
-
-### `hooks/use-mobile.ts`
-
-```typescript
-const isMobile = useMobile() // true jika lebar layar < 768px
-```
-
-Menggunakan `window.matchMedia` dengan listener real-time.
-Menggunakan `setTimeout(0)` untuk menghindari cascading render warnings.
+## 7. SEMUA KOMPONEN
+
+- `InterviewSetup.tsx`: Halaman setup wawancara dengan kartu tunggal Behavioral Event Interview (BEI), ringkasan metode STAR+FACT, dan 7 kompetensi Spencer & Spencer.
+- `LiveInterview.tsx`: Antarmuka simulasi suara langsung dengan visualizer ombak suara, pewaktu 15 menit, indikator turn-taking, dan protokol BEI Siti Rahayu.
+- `InterviewEvaluation.tsx`: Dasbor komprehensif hasil evaluasi dengan kartu agregat ConCISE, STAR, FACT, kartu visual 7 kompetensi Spencer & Spencer, kartu per-pertanyaan, panel coaching Siti, dan latihan suara ulang.
+- `CoachingLive.tsx`: Sesi konsultasi suara real-time pasca wawancara dengan Siti Rahayu.
+- `StructuredDataForm.tsx`: Form edit data terstruktur CV dan kartu visual target kompetensi Spencer & Spencer.
 
 ---
 
 ## 8. MODEL DATA & TIPE
 
-### CVData Interface
-
+### Model Ekstraksi (`lib/gemini-extraction.ts`):
 ```typescript
-interface CVData {
-  profile: {
-    name: string
-    email: string
-    phone: string
-    location: string
-  }
-  experience: Array<{
-    role: string
-    company: string
-    duration: string
-    responsibilities: string[]
-  }>
-  education: Array<{
-    degree: string
-    institution: string
-    year: string
-  }>
-  skills: string[]
-  projects: Array<{
-    name: string
-    description: string
-  }>
-  certifications: string[]
+export interface RequiredCompetency {
+  code: 'EXP' | 'AT' | 'CT' | 'ACH' | 'CO' | 'TW' | 'INT';
+  name: string;
+  target_level: number; // 1-5
+  reason: string;
+}
+
+export interface JDData {
+  role: string;
+  requirements: string[];
+  responsibilities: string[];
+  qualifications: string[];
+  target_competencies?: RequiredCompetency[];
 }
 ```
 
-### JDData Interface
-
+### Model Evaluasi (`lib/evaluate.ts`):
 ```typescript
-interface JDData {
-  role: string
-  requirements: string[]
-  responsibilities: string[]
-  qualifications: string[]
-}
-```
-
-### Tipe Live Interview
-
-```typescript
-type Transcription = {
-  role: 'ai' | 'user'
-  text: string
+export interface CompetencyScore {
+  code: string;
+  name: string;
+  level: number; // 1-5
+  score: number; // 0-100
+  summary: string;
 }
 
-type InterviewStatus = 'connecting' | 'active' | 'ending'
+export interface QAAnalysis {
+  question: string;
+  answer: string;
+  star: {
+    situation: { present: boolean; evidence: string };
+    task: { present: boolean; evidence: string };
+    action: { present: boolean; evidence: string };
+    result: { present: boolean; evidence: string };
+    score: number; // 0-4
+  };
+  fact?: {
+    feeling: { score: number; note: string };
+    action: { score: number; note: string };
+    context: { score: number; note: string };
+    thinking: { score: number; note: string };
+    total: number; // 0-40
+  };
+  competency?: {
+    code: string;
+    name: string;
+    level: number; // 1-5
+    behavior_note: string;
+  };
+  concise: {
+    consistency: { score: number; note: string };
+    clarity: { score: number; note: string };
+    information: { score: number; note: string };
+    structure: { score: number; note: string };
+    effectiveness: { score: number; note: string };
+    total: number; // 0-50
+  };
+  rating: number; // 1-10
+  suggestion: string;
+  hack: string;
+  better_answer_example: string;
+}
 
-// historyRef: akumulasi string
-// Format: "AI: [teks] / USER: [teks] / AI: [teks] ..."
+export interface EvaluationData {
+  overall_score: number;
+  overall_summary: string;
+  candidate_archetype: CandidateArchetype;
+  qa_analysis: QAAnalysis[];
+  competency_scores?: CompetencyScore[];
+  cv_jd_match: {
+    score: number;
+    matched_skills_in_interview: string[];
+    skill_gaps_addressed: string[];
+    skill_gaps_unaddressed: string[];
+    assessment: string;
+  };
+  strengths: string[];
+  weaknesses: string[];
+  final_recommendation: string;
+  recommendation_verdict: 'recommended' | 'conditional' | 'not_recommended';
+}
 ```
 
 ---
 
 ## 9. KONFIGURASI & ENVIRONMENT
 
-### Environment Variables
-
-| Variable                      | Wajib | Deskripsi                              |
-|-------------------------------|-------|----------------------------------------|
-| `NEXT_PUBLIC_GEMINI_API_KEY`  | Ya    | Kunci API Google Gemini (exposed ke frontend) |
-| `APP_URL`                     | Tidak | URL deployment (untuk Google AI Studio) |
-| `DISABLE_HMR`                 | Tidak | Set `true` untuk menonaktifkan Hot Module Replacement |
-
-> **Catatan:** Prefix `NEXT_PUBLIC_` berarti key ini terekspos ke browser — ini disengaja untuk arsitektur client-side langsung ke Gemini API.
-
-### next.config.ts — Konfigurasi Penting
-
-```typescript
-{
-  reactStrictMode: true,
-  output: 'standalone',           // Untuk deployment containerized
-  images: {
-    remotePatterns: [{ hostname: 'picsum.photos' }]
-  },
-  // Turbopack aliases — mencegah fetch polyfill overwrite
-  turbopack: {
-    resolveAlias: {
-      'node-fetch': './lib/empty-fetch-polyfill.js',
-      'whatwg-fetch': './lib/empty-fetch-polyfill.js',
-    }
-  }
-}
-```
-
-### package.json — Scripts
-
-| Script           | Perintah               |
-|------------------|------------------------|
-| `npm run dev`    | Development server     |
-| `npm run build`  | Production build       |
-| `npm run start`  | Production server      |
-| `npm run lint`   | Jalankan ESLint        |
-| `npm run clean`  | Hapus cache Next.js    |
+| Variabel | Wajib | Keterangan |
+|---|---|---|
+| `GEMINI_API_KEY` | Ya | Kunci API Google Gemini untuk pemrosesan backend |
+| `NEXT_PUBLIC_GEMINI_API_KEY` | Ya | Kunci API Gemini untuk koneksi WebSocket frontend |
 
 ---
 
 ## 10. DESAIN & SISTEM STYLING
 
-### Color Scheme (Dark Mode)
-
-| Peran             | Warna                  | Hex        |
-|-------------------|------------------------|------------|
-| Primary           | Blue-600 / Blue-500    | #2563eb / #3b82f6 |
-| Background        | Near Black             | #0A0C10    |
-| Card Background   | Slate-900              | #0f172a    |
-| Borders           | Slate-800/700 (low opacity) | —     |
-| Text Primary      | Slate-100              | #f1f5f9    |
-| Text Secondary    | Slate-400              | #94a3b8    |
-| Accent Success    | Emerald / Green        | #10b981    |
-| Accent Warning    | Amber                  | #f59e0b    |
-
-### Custom Utility Classes (globals.css)
-
-| Class           | Deskripsi                                    |
-|-----------------|----------------------------------------------|
-| `.bento-card`   | Card dengan slate background dan border      |
-| `.bento-accent` | Gradient card dengan aksen biru              |
-| `.glass-panel`  | Glassmorphism dengan backdrop blur           |
-
-### Typography
-
-| Peran      | Font              | Penggunaan               |
-|------------|-------------------|--------------------------|
-| Sans       | Inter             | Body, UI elements        |
-| Serif      | Playfair Display  | Italic accents, branding |
+- **Tema**: Dark mode modern dengan palet warna berstandar HSL (Navy Slate `#0A0C10`, Electric Blue `#2563eb`, Emerald `#10b981`, Amber `#f59e0b`, Cyan `#06b6d4`).
+- **Desain Komponen**: Glassmorphism cards dengan border beraksen halus dan mikro-animasi transisi `motion/react`.
+- **Indikator Kompetensi**: Bar segmen 5 level dengan warna adaptif per cluster Spencer & Spencer.
 
 ---
 
 ## 11. DEPLOYMENT & RUNTIME
 
-**Platform:** Google AI Studio (Cloud Run)
-
-- Auto-inject Gemini API key saat runtime
-- Auto-inject Cloud Run service URL
-- Deployment sebagai standalone Next.js container
-- Docker-compatible (output: 'standalone')
-
-**Browser Requirements:**
-- Modern browser dengan Web Audio API support
-- Akses mikrofon dan speaker
-- Minimum browser: Chrome 90+, Firefox 90+, Safari 15+
-
-**Proses Build:**
-```bash
-npm run build    # Compile TypeScript, bundle assets
-npm run start    # Jalankan production server (port 3000)
-```
+- **Platform Target**: Node.js 20+ / Docker Container / Cloud Run.
+- **Kepatuhan Browser**: Google Chrome 90+, Microsoft Edge 90+, Safari 15+ (Mendukung Web Audio API & MediaRecorder Opus).
 
 ---
 
 ## 12. KEAMANAN & PRIVASI
 
-### API Key
-- `NEXT_PUBLIC_` prefix → terekspos ke frontend (by design)
-- Harus menggunakan API key restrictions di Google Cloud Console
-- Batasi ke domain deployment spesifik
-
-### Penanganan Data
-- Data CV diproses via Gemini API (tidak disimpan permanen di server)
-- Riwayat percakapan hanya disimpan selama sesi berlangsung (in-memory)
-- Audio user di-stream langsung ke Gemini (tidak di-record/disimpan)
-- Tidak ada database — semua state di React client
-
-### Fetch Protection
-- `window.fetch` native dilindungi dari overwrite polyfill
-- Alias Turbopack/Webpack mengarahkan polyfill ke empty stub
-- Mencegah interferensi library pihak ketiga
+- Data CV dan transkrip wawancara hanya diproses secara *in-memory* selama sesi aktif untuk keperluan evaluasi dan bimbingan, tanpa persistensi ke basis data eksternal tanpa izin kandidat.
+- Perlindungan native `window.fetch` terhadap potensi overwrite oleh polyfill pihak ketiga.
 
 ---
 
 ## 13. INSIGHT TEKNIS KUNCI
 
-### 1. Pencegahan Echo / Double-Voice Bug
-Mikrofon hanya diaktifkan SETELAH sinyal `turnComplete` dari Gemini (setelah Siti selesai greeting). Ini mencegah audio Siti masuk kembali ke mikrofon dan membuat loop echo.
-
-### 2. VAD Sensitivity LOW
-Pengaturan Voice Activity Detection yang rendah memberikan jeda 1800ms sebelum dianggap selesai berbicara. Ini memberikan kandidat waktu untuk berpikir tanpa dipotong di tengah jawaban.
-
-### 3. High-Shelf Audio Filter
-Filter `BiquadFilter` pada 3000 Hz dengan gain +4dB meningkatkan kejernihan suara Siti, terutama untuk konsonan dan intonasi yang sering hilang pada codec audio generative.
-
-### 4. Exponential Backoff pada Ekstraksi
-Retry logic di `gemini-extraction.ts` menangani rate limiting Gemini API secara elegan, terutama saat traffic tinggi di jam sibuk.
-
-### 5. Refs vs State untuk Session Management
-`historyRef` menggunakan `useRef` (bukan `useState`) untuk mengakumulasi transkripsi tanpa trigger re-render, menjaga performa UI selama percakapan panjang.
-
-### 6. Cancellation Flag Pattern
-`cancellationFlag` (`{ cancelled: boolean }`) diteruskan ke async callbacks untuk mencegah state update pada komponen yang sudah unmount — mencegah memory leak dan error React.
-
-### 7. JSON Schema Enforcement
-Gemini API dipaksa mengeluarkan JSON yang sesuai skema via `responseMimeType` dan `responseSchema`. Ini lebih reliable daripada parsing JSON dari teks bebas.
-
-### 8. Float32 → Int16 Conversion
-Audio dari `ScriptProcessor` berbentuk Float32 (-1.0 hingga +1.0). Sebelum dikirim ke Gemini Live API, dikonversi ke Int16 (-32768 hingga +32767) karena itulah format yang diterima API.
+1. **Eliminasi Echo**: Mikrofon browser hanya diaktifkan setelah sinyal `turnComplete` diterima dari Gemini Live API, mencegah audio interviewer terdengar kembali oleh mikrofon.
+2. **Ekstraksi Terstandar Spencer & Spencer**: Mengubah data Job Description mentah menjadi parameter kompetensi terstandar menjamin pertanyaan wawancara selalu relevan dengan dinamika kerja nyata.
+3. **Penyelarasan STAR + FACT**: Kerangka STAR memastikan struktur kelengkapan cerita, sementara FACT memastikan verifikasi keaslian peran pribadi dan proses berpikir kandidat.
+4. **LLM-as-a-Judge Tanpa Bias Verbositas**: Kombinasi metrik ConCISE dan verifikasi bukti nyata perilaku mengatasi kelemahan kecerdasan buatan konvensional yang kerap memberi skor tinggi hanya pada jawaban panjang.
 
 ---
 
-## RINGKASAN EKSEKUTIF
-
-**Intervyouuu** adalah aplikasi wawancara kerja AI yang sophisticated dengan tiga lapisan:
-
-1. **Data Layer**: Gemini mengekstrak CV dan JD menjadi objek terstruktur yang bisa diedit
-2. **Interaction Layer**: Gemini Live API menjalankan percakapan suara real-time dengan persona "Siti Rahayu" — interviewer AI yang hangat namun tajam, beroperasi dalam Bahasa Indonesia semi-formal
-3. **Evaluation Layer**: Gemini Pro menghasilkan laporan evaluasi komprehensif berbasis transkripsi percakapan
-
-Siti Rahayu bukan sekadar chatbot — ia dirancang sebagai karakter dengan depth emosional: profesional tapi empati, tajam tapi tidak menghakimi, manusiawi melalui fillers dan jeda yang natural. Setiap aspek teknis (VAD, delay mic, audio filter) melayani satu tujuan: membuat wawancara terasa nyata.
-
----
-
-*Dokumentasi ini dibuat otomatis berdasarkan analisis menyeluruh seluruh file proyek pada 2026-04-27.*
+*Dokumentasi ini diselaraskan dengan standar revisi akademik dan arahan skripsi Bu Rina pada Oktober 2026.*

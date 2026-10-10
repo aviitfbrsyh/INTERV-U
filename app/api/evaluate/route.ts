@@ -57,19 +57,21 @@ ${crossMatchContext}
 
 INSTRUKSI EVALUASI:
 
-1. EKSTRAKSI SEMUA PASANGAN TANYA-JAWAB — TANPA TERKECUALI (ATURAN MUTLAK):
-   - Baca SELURUH transkrip dari awal sampai akhir.
-   - Identifikasi SETIAP pertanyaan yang diajukan oleh "AI:" dan pasangkan dengan jawaban "User:" yang mengikutinya.
-   - HITUNG berapa total pertanyaan substantif yang ada di transkrip. Biasanya ada 7 pertanyaan, tapi bisa lebih jika ada follow-up.
-   - SETIAP pertanyaan dan jawaban WAJIB masuk ke array qa_analysis. TIDAK ADA yang boleh dilewati, diringkas, atau digabung.
-   - Pembukaan/sapaan awal (seperti "Selamat pagi, saya Siti Rahayu...") dan kalimat penutup sesi BUKAN pertanyaan — jangan dimasukkan.
-   - Jika AI mengajukan pertanyaan follow-up/klarifikasi (bukan pertanyaan baru), GABUNGKAN dengan pertanyaan induknya sebagai 1 entri qa_analysis.
-   - VALIDASI: Jumlah item di qa_analysis HARUS sama dengan jumlah pertanyaan substantif yang teridentifikasi di transkrip. Jika tidak cocok, Anda telah GAGAL.
+1. Pisahkan transkrip menjadi pasangan TANYA-JAWAB. Setiap pertanyaan dari "AI:" dipasangkan dengan jawaban "User:" yang mengikutinya.
 
-2. Untuk SETIAP pasangan tanya-jawab di qa_analysis, berikan analisis LENGKAP:
-   - question: tulis pertanyaan interviewer secara utuh (jangan diringkas)
-   - answer: tulis jawaban kandidat secara utuh (jangan diringkas, jangan dipotong)
+2. Untuk SETIAP pasangan tanya-jawab, berikan analisis lengkap:
    - star: deteksi 4 komponen STAR (Situation/Task/Action/Result), tiap komponen tandai present (true/false) + evidence (kutipan singkat dari jawaban atau "-" jika absen). score = jumlah komponen present (0-4).
+   - fact: analisis 4 dimensi FACT untuk memvalidasi keaslian pengalaman nyata kandidat:
+     * feeling: { score: 1-10, note: "Sikap mental, ketenangan emosional, atau fokus kandidat di bawah tekanan" }
+     * action: { score: 1-10, note: "Spesifisitas tindakan mandiri yang dieksekusi sendiri (bukan klaim tim)" }
+     * context: { score: 1-10, note: "Kedalaman detail situasi nyata dan konsekuensi jika masalah gagal diselesaikan" }
+     * thinking: { score: 1-10, note: "Kematangan penalaran dan pertimbangan logis di balik keputusannya" }
+     total = total skor keempat dimensi (max 40)
+   - competency: identifikasi kompetensi Spencer & Spencer (1993) yang digali pada pertanyaan ini:
+     * code: kode resmi (e.g., "AT", "EXP", "TW", "ACH", "CO", "INT", "CT")
+     * name: nama resmi kompetensi (e.g., "Analytical Thinking")
+     * level: capaian level perilaku kandidat (skala 1-5 sesuai Kamus Spencer & Spencer)
+     * behavior_note: bukti indikator perilaku konkret dari transkrip yang melandasi level tersebut
    - concise: nilai 5 dimensi ConCISE skor 1-10 + note singkat:
      * consistency: konsistensi jawaban dengan pertanyaan
      * clarity: kejelasan penyampaian
@@ -82,15 +84,18 @@ INSTRUKSI EVALUASI:
    - hack: tips/trik singkat untuk wawancara berikutnya, mulai dengan kata kunci aksi seperti "Mulai dengan...", "Sebutkan angka...", "Gunakan format STAR...", dll. Maksimal 1 kalimat tegas.
    - better_answer_example: contoh jawaban yang lebih baik untuk pertanyaan ini, ditulis dalam gaya kandidat (gunakan saya/aku), 2-4 kalimat maksimal
 
-3. cv_jd_match: analisis seberapa baik kandidat menjawab gap CV-JD selama wawancara
+3. competency_scores: rekapitulasi penilaian kompetensi Spencer & Spencer (1993) secara keseluruhan:
+   Untuk setiap kompetensi yang diuji, berikan code, name, level (1-5), score (0-100), dan summary evaluasi.
+
+4. cv_jd_match: analisis seberapa baik kandidat menjawab gap CV-JD selama wawancara
    - matched_skills_in_interview: skill yang TERBUKTI dari CV muncul di jawaban
    - skill_gaps_addressed: gap yang berhasil dijawab kandidat
    - skill_gaps_unaddressed: gap yang TIDAK terjawab atau dijawab buruk
    - assessment: kesimpulan 2-3 kalimat
 
-4. overall_score: skor akhir 1-100
-5. overall_summary: ringkasan 2-3 kalimat performa keseluruhan
-6. candidate_archetype: KATEGORIKAN kandidat ini berdasarkan POLA ConCISE keseluruhan dari semua jawabannya. Pilih SATU yang paling sesuai:
+5. overall_score: skor akhir 1-100
+6. overall_summary: ringkasan 2-3 kalimat performa keseluruhan
+7. candidate_archetype: KATEGORIKAN kandidat ini berdasarkan POLA ConCISE keseluruhan dari semua jawabannya. Pilih SATU yang paling sesuai:
    - "star_performer" → label "The Star Performer (Jawara Sejati)" → semua dimensi 8+, kandidat ideal
    - "solid_performer" → label "The Solid Performer (Cukup Solid)" → rata-rata 6-7, bagus tapi belum istimewa
    - "smooth_talker" → label "The Smooth Talker (Manis Bicara, Substansi Tipis)" → Clarity & Structure tinggi tapi Information & Consistency rendah → "jago ngomong tapi gak bisa kerja"
@@ -111,16 +116,14 @@ INSTRUKSI EVALUASI:
    - key_evidence: 2-3 bukti spesifik dari jawaban yang menunjukkan pola ini
    - hr_perspective: 1-2 kalimat dari sudut pandang HR — apa yang HR pikirkan tentang kandidat ini, ditulis dalam gaya internal note yang jujur
 
-7. strengths & weaknesses: minimal 3 poin masing-masing, spesifik
-8. final_recommendation: rekomendasi akhir 2-3 kalimat
-9. recommendation_verdict: salah satu dari: "recommended", "conditional", "not_recommended"
+8. strengths & weaknesses: minimal 3 poin masing-masing, spesifik
+9. final_recommendation: rekomendasi akhir 2-3 kalimat
+10. recommendation_verdict: salah satu dari: "recommended", "conditional", "not_recommended"
 
-ATURAN KRITIS — WAJIB DIPATUHI:
+PENTING:
 - Gunakan Bahasa Indonesia profesional
 - Setiap analisis HARUS berbasis bukti dari transkrip
 - Suggestion dan hack harus AKSI YANG BISA LANGSUNG DIPRAKTIKKAN
-- SEMUA pertanyaan dan jawaban dalam transkrip WAJIB dianalisis — TIDAK ADA yang boleh terlewat! Jika ada 7 pertanyaan, maka qa_analysis HARUS berisi 7 entri. Jika ada 5, maka 5. Hitung dan cocokkan.
-- Tulis question dan answer SECARA LENGKAP di setiap entri qa_analysis — jangan meringkas atau memotong.
 - Jika transkrip kosong atau sangat pendek, tetap buat array qa_analysis dengan minimal 1 entri menunjukkan bahwa wawancara tidak cukup data`;
 
     const response = await callWithRetry(() => ai.models.generateContent({
@@ -145,6 +148,20 @@ ATURAN KRITIS — WAJIB DIPATUHI:
               },
               required: ["type", "label", "description", "warning_level", "key_evidence", "hr_perspective"],
             },
+            competency_scores: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  code: { type: Type.STRING },
+                  name: { type: Type.STRING },
+                  level: { type: Type.NUMBER },
+                  score: { type: Type.NUMBER },
+                  summary: { type: Type.STRING },
+                },
+                required: ["code", "name", "level", "score", "summary"],
+              },
+            },
             qa_analysis: {
               type: Type.ARRAY,
               items: {
@@ -163,6 +180,27 @@ ATURAN KRITIS — WAJIB DIPATUHI:
                     },
                     required: ["situation", "task", "action", "result", "score"],
                   },
+                  fact: {
+                    type: Type.OBJECT,
+                    properties: {
+                      feeling: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, note: { type: Type.STRING } }, required: ["score", "note"] },
+                      action: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, note: { type: Type.STRING } }, required: ["score", "note"] },
+                      context: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, note: { type: Type.STRING } }, required: ["score", "note"] },
+                      thinking: { type: Type.OBJECT, properties: { score: { type: Type.NUMBER }, note: { type: Type.STRING } }, required: ["score", "note"] },
+                      total: { type: Type.NUMBER },
+                    },
+                    required: ["feeling", "action", "context", "thinking", "total"],
+                  },
+                  competency: {
+                    type: Type.OBJECT,
+                    properties: {
+                      code: { type: Type.STRING },
+                      name: { type: Type.STRING },
+                      level: { type: Type.NUMBER },
+                      behavior_note: { type: Type.STRING },
+                    },
+                    required: ["code", "name", "level", "behavior_note"],
+                  },
                   concise: {
                     type: Type.OBJECT,
                     properties: {
@@ -180,7 +218,7 @@ ATURAN KRITIS — WAJIB DIPATUHI:
                   hack: { type: Type.STRING },
                   better_answer_example: { type: Type.STRING },
                 },
-                required: ["question", "answer", "star", "concise", "rating", "suggestion", "hack", "better_answer_example"],
+                required: ["question", "answer", "star", "fact", "competency", "concise", "rating", "suggestion", "hack", "better_answer_example"],
               },
             },
             cv_jd_match: {
@@ -199,7 +237,7 @@ ATURAN KRITIS — WAJIB DIPATUHI:
             final_recommendation: { type: Type.STRING },
             recommendation_verdict: { type: Type.STRING },
           },
-          required: ["overall_score", "overall_summary", "candidate_archetype", "qa_analysis", "cv_jd_match", "strengths", "weaknesses", "final_recommendation", "recommendation_verdict"],
+          required: ["overall_score", "overall_summary", "candidate_archetype", "competency_scores", "qa_analysis", "cv_jd_match", "strengths", "weaknesses", "final_recommendation", "recommendation_verdict"],
         },
       },
     }));

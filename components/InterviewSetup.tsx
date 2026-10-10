@@ -7,65 +7,29 @@ import { extractCV, extractJD, CVData, JDData } from '@/lib/gemini-extraction';
 import { crossMatch, CrossMatchData } from '@/lib/cross-match';
 import { CVForm, JDForm } from '@/components/StructuredDataForm';
 
-export type InterviewMode = 'supportif' | 'profesional' | 'pressure';
+export type InterviewMode = 'behavioral' | 'profesional' | 'supportif' | 'pressure';
 
 interface InterviewSetupProps {
   onStart: (cvText: string, jdText: string, crossMatchData: CrossMatchData, mode: InterviewMode) => void;
 }
 
-const MODES: {
-  id: InterviewMode;
-  name: string;
-  persona: string;
-  role: string;
-  tagline: string;
-  traits: string[];
-  color: string;
-  colorMuted: string;
-  colorBorder: string;
-  colorText: string;
-  dot: string;
-}[] = [
-  {
-    id: 'supportif',
-    name: 'Supportif',
-    persona: 'Kak Rina',
-    role: 'HR Generalist · 3 Tahun',
-    tagline: 'Hangat, sabar, encouraging',
-    traits: ['Kasih hint kalau jawaban kurang', 'Validasi setiap jawaban bagus', 'Pace lambat & nyaman'],
-    color: '#10b981',
-    colorMuted: 'rgba(16,185,129,0.08)',
-    colorBorder: 'rgba(16,185,129,0.25)',
-    colorText: '#6ee7b7',
-    dot: 'bg-emerald-500',
-  },
-  {
-    id: 'profesional',
-    name: 'Profesional',
-    persona: 'Siti Rahayu',
-    role: 'Director of Talent · 20 Tahun',
-    tagline: 'Warm but firm — standar industri',
-    traits: ['Pertanyaan adaptif dari CV & JD', 'Tegas namun tetap empati', 'Gali jawaban lebih dalam'],
-    color: '#3b82f6',
-    colorMuted: 'rgba(59,130,246,0.08)',
-    colorBorder: 'rgba(59,130,246,0.25)',
-    colorText: '#93c5fd',
-    dot: 'bg-blue-500',
-  },
-  {
-    id: 'pressure',
-    name: 'Pressure Test',
-    persona: 'Pak Arief',
-    role: 'Director of People · 18 Tahun',
-    tagline: 'Skeptis, kritis, tanpa basa-basi',
-    traits: ['Potong jawaban klise langsung', 'Diam panjang setelah kamu jawab', 'Pertanyaan jebakan & challenge'],
-    color: '#ef4444',
-    colorMuted: 'rgba(239,68,68,0.08)',
-    colorBorder: 'rgba(239,68,68,0.25)',
-    colorText: '#fca5a5',
-    dot: 'bg-red-500',
-  },
-];
+const BEHAVIORAL_MODE = {
+  id: 'behavioral' as InterviewMode,
+  name: 'Behavioral Event Interview (BEI)',
+  persona: 'Siti Rahayu',
+  role: 'Director of Talent · 20 Tahun Pengalaman HR',
+  tagline: 'Standar Baku Wawancara Kerja Berbasis Perilaku & Pengalaman Nyata',
+  traits: [
+    'Pertanyaan terfokus pada 7 Kompetensi Utama IT (Spencer & Spencer)',
+    'Eksplorasi pengalaman nyata berbasis metode STAR + FACT',
+    'Durasi simulasi terkalibrasi sekitar ±15 Menit',
+  ],
+  color: '#3b82f6',
+  colorMuted: 'rgba(59,130,246,0.08)',
+  colorBorder: 'rgba(59,130,246,0.25)',
+  colorText: '#93c5fd',
+  dot: 'bg-blue-500',
+};
 
 type SetupStep = 'input' | 'review';
 
@@ -232,7 +196,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
   const [jdData, setJdData] = useState<JDData | null>(null);
   const [isCrossMatching, setIsCrossMatching] = useState(false);
 
-  const [interviewMode, setInterviewMode] = useState<InterviewMode>('profesional');
+  const [interviewMode, setInterviewMode] = useState<InterviewMode>('behavioral');
 
   const cvFileRef = useRef<HTMLInputElement>(null);
   const jdFileRef = useRef<HTMLInputElement>(null);
@@ -542,89 +506,71 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                 </button>
             </div>
 
-            {/* Mode Selection */}
-            <div className="space-y-4">
+            {/* Mode Preview — Fokus Tunggal Behavioral Interview */}
+            <div className="space-y-3">
               <div className="flex items-center gap-4">
                 <div className="h-px flex-1 bg-slate-800/80" />
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">Pilih Mode Wawancara</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-blue-400">
+                  Mode Standar Baku Wawancara
+                </span>
                 <div className="h-px flex-1 bg-slate-800/80" />
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                {MODES.map((m) => {
-                  const selected = interviewMode === m.id;
-                  return (
-                    <motion.button
-                      key={m.id}
-                      onClick={() => setInterviewMode(m.id)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                      className="relative text-left rounded-2xl p-5 transition-all duration-200 overflow-hidden"
-                      style={{
-                        background: selected ? m.colorMuted : 'rgba(255,255,255,0.02)',
-                        border: `1.5px solid ${selected ? m.color : 'rgba(255,255,255,0.06)'}`,
-                        boxShadow: selected ? `0 0 28px ${m.color}22, 0 0 0 1px ${m.color}15 inset` : 'none',
-                      }}
-                    >
-                      {selected && (
-                        <motion.div
-                          layoutId="mode-glow"
-                          className="absolute inset-0 rounded-2xl pointer-events-none"
-                          style={{ background: `radial-gradient(ellipse at 50% 0%, ${m.color}18, transparent 70%)` }}
-                        />
-                      )}
 
-                      <div className="relative z-10">
-                        {/* Top row: dot + recommended badge */}
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${m.dot}`} />
-                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: m.color }}>
-                              {m.name}
-                            </span>
-                          </div>
-                          {m.id === 'profesional' && (
-                            <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full"
-                              style={{ background: m.colorMuted, color: m.colorText, border: `1px solid ${m.colorBorder}` }}>
-                              Default
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Persona name */}
-                        <p className="text-base font-bold text-white leading-tight">{m.persona}</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5 mb-3">{m.role}</p>
-
-                        {/* Tagline */}
-                        <p className="text-xs leading-relaxed mb-3" style={{ color: m.colorText }}>
-                          {m.tagline}
-                        </p>
-
-                        {/* Traits */}
-                        <ul className="space-y-1.5">
-                          {m.traits.map((t) => (
-                            <li key={t} className="flex items-start gap-1.5">
-                              <span className="mt-[3px] shrink-0 w-1 h-1 rounded-full" style={{ background: m.color }} />
-                              <span className="text-[10px] text-slate-400 leading-snug">{t}</span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {/* Selected checkmark */}
-                        {selected && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center"
-                            style={{ background: m.color }}
-                          >
-                            <CheckCircle className="w-3 h-3 text-white" />
-                          </motion.div>
-                        )}
+              <div
+                className="relative rounded-2xl p-5 sm:p-6 transition-all duration-200 overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(99,102,241,0.04) 100%)',
+                  border: '1.5px solid rgba(59,130,246,0.25)',
+                  boxShadow: '0 0 32px rgba(59,130,246,0.10), inset 0 0 0 1px rgba(59,130,246,0.12)',
+                }}
+              >
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center font-bold text-blue-300 text-lg shadow-inner shrink-0">
+                      SR
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-bold text-white tracking-tight">Siti Rahayu</span>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          Pewawancara Utama
+                        </span>
                       </div>
-                    </motion.button>
-                  );
-                })}
+                      <p className="text-xs text-slate-400">Director of Talent · 20 Tahun Pengalaman HR</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                      Behavioral Event Interview (BEI)
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                      ⏱️ Durasi ±15 Menit
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-3 pt-3 border-t border-white/[0.08]">
+                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Landasan Pertanyaan</p>
+                    <p className="text-xs text-white/90 font-medium leading-relaxed">
+                      7 Kompetensi Inti IT (Kamus Spencer & Spencer)
+                    </p>
+                  </div>
+                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Metode Penggalian</p>
+                    <p className="text-xs text-white/90 font-medium leading-relaxed">
+                      STAR (Situation, Task, Action, Result) + FACT Probing
+                    </p>
+                  </div>
+                  <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fokus Penilaian</p>
+                    <p className="text-xs text-white/90 font-medium leading-relaxed">
+                      Bukti tindakan & pengalaman nyata, bukan teori buku
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

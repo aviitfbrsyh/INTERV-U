@@ -21,7 +21,7 @@ const LiveInterview = dynamic(() => import('@/components/LiveInterview'), { ssr:
 const InterviewEvaluation = dynamic(() => import('@/components/InterviewEvaluation'), { ssr: false });
 
 type AppState = 'landing' | 'setup' | 'interview' | 'evaluation';
-type InterviewMode = 'supportif' | 'profesional' | 'pressure';
+type InterviewMode = 'behavioral' | 'profesional' | 'supportif' | 'pressure';
 
 const SF = `-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif`;
 
@@ -111,7 +111,7 @@ export default function Home() {
   const [prefetchedEvaluation, setPrefetchedEvaluation] = useState<EvaluationData | null>(null);
   const [isPrefetching, setIsPrefetching] = useState(false);
   const [prefetchError, setPrefetchError] = useState<string | null>(null);
-  const [interviewMode, setInterviewMode] = useState<InterviewMode>('profesional');
+  const [interviewMode, setInterviewMode] = useState<InterviewMode>('behavioral');
   const [savedToast, setSavedToast] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const savedRef = useRef(false);

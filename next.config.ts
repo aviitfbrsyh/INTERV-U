@@ -8,6 +8,7 @@ const WebpackPolyfillPath = path.resolve(__dirname, 'lib/empty-fetch-polyfill.js
 const TurboPolyfillPath = './lib/empty-fetch-polyfill.js';
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.resolve(__dirname),
   reactStrictMode: true,
   experimental: {
     optimizePackageImports: [
@@ -17,8 +18,6 @@ const nextConfig: NextConfig = {
       '@react-three/drei',
       '@react-three/fiber',
       'three',
-      'firebase',
-      '@google/genai'
     ],
   },
   eslint: {

@@ -24,11 +24,21 @@ export interface CVData {
   certifications: string[];
 }
 
+export interface RequiredCompetency {
+  code: string;
+  name: string;
+  cluster: string;
+  importance: 'Utama' | 'Pendukung';
+  rationale: string;
+  behavioral_focus: string;
+}
+
 export interface JDData {
   role: string;
   requirements: string[];
   responsibilities: string[];
   qualifications: string[];
+  target_competencies?: RequiredCompetency[];
 }
 
 export async function extractCV(input: { text?: string; file?: { base64: string; mimeType: string } }): Promise<CVData> {

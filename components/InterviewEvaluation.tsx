@@ -6,10 +6,10 @@ import {
   Trophy, Target, AlertTriangle, CheckCircle, RefreshCcw, Download,
   MessageSquare, User, Sparkles, Lightbulb, Zap, TrendingUp,
   FileSearch, ListChecks, X, Check, Volume2, Pause, Edit3,
-  Send, Loader2, MessageCircle, Mic, Square, Info
+  Send, Loader2, MessageCircle, Mic, Square, Info, Award
 } from 'lucide-react';
 import { CrossMatchData } from '@/lib/cross-match';
-import { runEvaluation, EvaluationData as EvaluationDataType, QAAnalysis as QAAnalysisType, CandidateArchetype as CandidateArchetypeType } from '@/lib/evaluate';
+import { runEvaluation, EvaluationData as EvaluationDataType, QAAnalysis as QAAnalysisType, CandidateArchetype as CandidateArchetypeType, CompetencyScore } from '@/lib/evaluate';
 import { retryAnswer, RetryResult } from '@/lib/practice-retry';
 import { askSiti, ChatMessage } from '@/lib/coaching-chat';
 import { generateSitiSpeech, generateSitiHighlight } from '@/lib/gemini-tts';
@@ -365,11 +365,21 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
   };
   const avgStar = evaluation.qa_analysis.reduce((s, q) => s + q.star.score, 0) / evaluation.qa_analysis.length;
 
+  const factList = evaluation.qa_analysis.filter(q => q.fact);
+  const avgFact = factList.length > 0 ? {
+    feeling: factList.reduce((s, q) => s + (q.fact?.feeling.score ?? 0), 0) / factList.length,
+    action: factList.reduce((s, q) => s + (q.fact?.action.score ?? 0), 0) / factList.length,
+    context: factList.reduce((s, q) => s + (q.fact?.context.score ?? 0), 0) / factList.length,
+    thinking: factList.reduce((s, q) => s + (q.fact?.thinking.score ?? 0), 0) / factList.length,
+    total: factList.reduce((s, q) => s + (q.fact?.total ?? 0), 0) / factList.length,
+  } : null;
+
   return (
     <>
       {/* AGGREGATE METRICS */}
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-7 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
+        {/* ConCISE */}
+        <div className={`col-span-12 ${avgFact ? 'lg:col-span-6' : 'lg:col-span-7'} bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6`}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 bg-purple-500/20 border border-purple-500/30 rounded-xl flex items-center justify-center">
               <ListChecks size={18} className="text-purple-400" />
@@ -409,43 +419,95 @@ function InterviewAnalysisView({ evaluation }: { evaluation: EvaluationData }) {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-5 bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-xl flex items-center justify-center">
-              <Zap size={18} className="text-amber-400" />
-            </div>
-            <div>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Rata-rata Skor STAR</h3>
-              <p className="text-xs text-slate-500">Kelengkapan struktur narasi</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-center py-6">
-            <div className="relative">
-              <svg className="w-32 h-32 -rotate-90">
-                <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="10" fill="none" className="text-slate-800" />
-                <motion.circle
-                  cx="64" cy="64" r="56"
-                  stroke="currentColor" strokeWidth="10" fill="none"
-                  strokeLinecap="round"
-                  className="text-amber-500"
-                  initial={{ strokeDasharray: '0 352' }}
-                  animate={{ strokeDasharray: `${(avgStar / 4) * 352} 352` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-black text-white">{avgStar.toFixed(1)}</span>
-                <span className="text-xs text-slate-500 font-mono">/ 4</span>
+        {/* STAR & FACT Column */}
+        <div className={`col-span-12 ${avgFact ? 'lg:col-span-6' : 'lg:col-span-5'} flex flex-col gap-4`}>
+          {/* STAR Card */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-xl flex items-center justify-center">
+                <Zap size={18} className="text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Rata-rata Skor STAR</h3>
+                <p className="text-xs text-slate-500">Kelengkapan struktur narasi</p>
               </div>
             </div>
+            <div className="flex items-center justify-center py-3">
+              <div className="relative">
+                <svg className="w-28 h-28 -rotate-90">
+                  <circle cx="56" cy="56" r="48" stroke="currentColor" strokeWidth="8" fill="none" className="text-slate-800" />
+                  <motion.circle
+                    cx="56" cy="56" r="48"
+                    stroke="currentColor" strokeWidth="8" fill="none"
+                    strokeLinecap="round"
+                    className="text-amber-500"
+                    initial={{ strokeDasharray: '0 301' }}
+                    animate={{ strokeDasharray: `${(avgStar / 4) * 301} 301` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-black text-white">{avgStar.toFixed(1)}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">/ 4</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 text-center leading-relaxed">
+              {avgStar >= 3 ? 'Narasi sangat lengkap — situasi, tugas, aksi, dan hasil tersampaikan jelas.'
+                : avgStar >= 2 ? 'Narasi cukup — namun beberapa komponen STAR masih perlu dipertajam.'
+                  : 'Narasi kurang lengkap — banyak jawaban yang melewatkan komponen kunci STAR.'}
+            </p>
           </div>
-          <p className="text-xs text-slate-400 text-center leading-relaxed">
-            {avgStar >= 3 ? 'Narasi sangat lengkap — Anda secara konsisten menyampaikan konteks, aksi, dan hasil.'
-              : avgStar >= 2 ? 'Narasi cukup — namun beberapa komponen STAR masih sering terlewat.'
-                : 'Narasi kurang lengkap — banyak jawaban yang melewatkan komponen kunci STAR.'}
-          </p>
+
+          {/* FACT Card (if available) */}
+          {avgFact && (
+            <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-500/20 border border-emerald-500/30 rounded-xl flex items-center justify-center">
+                    <Target size={18} className="text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Rata-rata Metrik FACT</h3>
+                    <p className="text-xs text-slate-500">Kedalaman probing behavioral</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-black text-emerald-400 font-mono">{avgFact.total.toFixed(1)}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">/ 40</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { label: 'F · Feeling/Focus', score: avgFact.feeling, color: 'text-amber-400', bar: 'bg-amber-500' },
+                  { label: 'A · Action', score: avgFact.action, color: 'text-blue-400', bar: 'bg-blue-500' },
+                  { label: 'C · Context', score: avgFact.context, color: 'text-purple-400', bar: 'bg-purple-500' },
+                  { label: 'T · Thinking', score: avgFact.thinking, color: 'text-cyan-400', bar: 'bg-cyan-500' },
+                ].map(item => (
+                  <div key={item.label} className="bg-black/20 border border-white/5 rounded-xl p-2.5 space-y-1">
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-400 font-semibold">{item.label}</span>
+                      <span className={`font-mono font-bold ${item.color}`}>{item.score.toFixed(1)}/10</span>
+                    </div>
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${item.score * 10}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                        className={`h-full ${item.bar} rounded-full`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* SPENCER & SPENCER COMPETENCIES OVERVIEW */}
+      <CompetenciesOverviewCard evaluation={evaluation} />
 
       {/* CANDIDATE ARCHETYPE CARD */}
       <ArchetypeCard archetype={evaluation.candidate_archetype} />
@@ -621,15 +683,22 @@ Skill Gap Sudah Dijawab: ${evaluation.cv_jd_match.skill_gaps_addressed.join(', '
 Skill Gap Belum Terjawab: ${evaluation.cv_jd_match.skill_gaps_unaddressed.join(', ') || 'Tidak ada'}
 Asesmen Match: ${evaluation.cv_jd_match.assessment}
 
-Rekomendasi Final: ${evaluation.final_recommendation}
+Revisi & Rekomendasi Final: ${evaluation.final_recommendation}
 
-==== ANALISIS PER PERTANYAAN ====
+==== EVALUASI KOMPETENSI (SPENCER & SPENCER 1993) ====
+${evaluation.competency_scores && evaluation.competency_scores.length > 0 ? evaluation.competency_scores.map(cs => `- [${cs.code}] ${cs.name} | Level Capaian: Level ${cs.level}/5 | Skor: ${cs.score}/100 | Bukti: ${cs.summary}`).join('\n') : '(Kompetensi dianalisis per pertanyaan di bawah)'}
+
+==== ANALISIS PER PERTANYAAN (BEI & STAR + FACT) ====
 ${evaluation.qa_analysis.map((qa, i) => `
 --- PERTANYAAN ${i + 1} ---
 Pertanyaan: ${qa.question}
 Jawaban Kandidat: ${qa.answer}
 Rating: ${qa.rating}/10
-
+${qa.competency ? `Kompetensi Diuji: [${qa.competency.code}] ${qa.competency.name} (Level ${qa.competency.level}/5)\nCatatan Perilaku: ${qa.competency.behavior_note}\n` : ''}${qa.fact ? `Framework FACT (${qa.fact.total}/40):
+- Feeling/Focus (${qa.fact.feeling.score}/10): ${qa.fact.feeling.note}
+- Action (${qa.fact.action.score}/10): ${qa.fact.action.note}
+- Context/Consequence (${qa.fact.context.score}/10): ${qa.fact.context.note}
+- Thinking (${qa.fact.thinking.score}/10): ${qa.fact.thinking.note}\n` : ''}
 STAR Framework (${qa.star.score}/4):
 - Situation: ${qa.star.situation.present ? '✓' : '✗'} — ${qa.star.situation.evidence}
 - Task: ${qa.star.task.present ? '✓' : '✗'} — ${qa.star.task.evidence}
@@ -650,11 +719,12 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
 `.trim();
 
   const suggestedQuestions = [
+    'Bagaimana capaian kompetensi saya berdasarkan Spencer & Spencer?',
+    'Di aspek FACT (Feeling, Action, Context, Thinking) apa saya paling lemah?',
     'Kenapa rating aku rendah? Spesifik dong!',
     'Apa yang paling urgent harus aku perbaiki sekarang?',
     'Kasih contoh jawaban yang lebih baik untuk pertanyaan terlemahku',
     'Gimana cara aku menonjolkan kekuatan di interview asli?',
-    'Skill gap aku yang mana yang paling bahaya?',
   ];
 
   const playAudio = (url: string, idx: number) => {
@@ -1016,6 +1086,116 @@ Contoh Jawaban Lebih Baik: ${qa.better_answer_example}
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+// =================== SPENCER & SPENCER COMPETENCIES OVERVIEW ===================
+function CompetenciesOverviewCard({ evaluation }: { evaluation: EvaluationData }) {
+  let competencies: CompetencyScore[] = evaluation.competency_scores || [];
+
+  if (competencies.length === 0 && evaluation.qa_analysis && evaluation.qa_analysis.length > 0) {
+    const map = new Map<string, CompetencyScore>();
+    for (const qa of evaluation.qa_analysis) {
+      if (qa.competency && !map.has(qa.competency.code)) {
+        map.set(qa.competency.code, {
+          code: qa.competency.code,
+          name: qa.competency.name,
+          level: qa.competency.level,
+          score: Math.min(100, Math.round(qa.competency.level * 20)),
+          summary: qa.competency.behavior_note,
+        });
+      }
+    }
+    competencies = Array.from(map.values());
+  }
+
+  if (competencies.length === 0) return null;
+
+  const clusterMeta: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    EXP: { label: 'Cluster Keahlian (Expertise)', color: 'text-cyan-400', bg: 'bg-cyan-500/15', border: 'border-cyan-500/40' },
+    AT:  { label: 'Cluster Kognitif (Cognitive)', color: 'text-indigo-400', bg: 'bg-indigo-500/15', border: 'border-indigo-500/40' },
+    CT:  { label: 'Cluster Kognitif (Cognitive)', color: 'text-indigo-400', bg: 'bg-indigo-500/15', border: 'border-indigo-500/40' },
+    ACH: { label: 'Cluster Dorongan Prestasi', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/40' },
+    CO:  { label: 'Cluster Kualitas & Keteraturan', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/40' },
+    TW:  { label: 'Cluster Hubungan Interpersonal', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/40' },
+    INT: { label: 'Cluster Efektivitas Pribadi', color: 'text-purple-400', bg: 'bg-purple-500/15', border: 'border-purple-500/40' },
+  };
+
+  return (
+    <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 bg-cyan-500/20 border border-cyan-500/30 rounded-2xl flex items-center justify-center shrink-0">
+            <Award size={22} className="text-cyan-400" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-bold text-white tracking-tight">Evaluasi Kompetensi (Spencer & Spencer 1993)</h3>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 rounded-full">
+                Standar BEI · Level 1–5
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">Pemetaan tingkat kemahiran perilaku berdasarkan bukti nyata dalam wawancara</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid of Competencies */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        {competencies.map((c) => {
+          const meta = clusterMeta[c.code] || { label: 'Kamus Spencer & Spencer', color: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/30' };
+          const level = Math.max(1, Math.min(5, c.level || 1));
+          const score = c.score ?? Math.round(level * 20);
+
+          return (
+            <div key={c.code} className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 space-y-3 hover:border-slate-700 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-mono font-black ${meta.bg} ${meta.color} border ${meta.border}`}>
+                    {c.code}
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-white leading-tight">{c.name}</h4>
+                    <span className="text-[10px] text-slate-500">{meta.label}</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className={`text-xs font-mono font-bold ${score >= 70 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {score}/100
+                  </span>
+                </div>
+              </div>
+
+              {/* Level Meter (1-5 dots) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Tingkat Kemahiran Perilaku:</span>
+                  <span className="font-bold text-cyan-300 font-mono">Level {level} / 5</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[1, 2, 3, 4, 5].map((lvl) => (
+                    <div
+                      key={lvl}
+                      className={`h-2 rounded-full transition-all ${
+                        lvl <= level
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-500 shadow-sm shadow-cyan-500/30'
+                          : 'bg-slate-800'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary / Behavioral Evidence */}
+              <p className="text-xs text-slate-400 leading-relaxed italic line-clamp-3">
+                &ldquo;{c.summary}&rdquo;
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1545,7 +1725,17 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Pertanyaan #{index}</span>
+              {qa.competency && (
+                <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-1.5 py-0.5 rounded font-bold">
+                  {qa.competency.code} (Lvl {qa.competency.level}/5)
+                </span>
+              )}
               <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">STAR {qa.star.score}/4</span>
+              {qa.fact && (
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                  FACT {qa.fact.total}/40
+                </span>
+              )}
               <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 border border-purple-500/30 px-1.5 py-0.5 rounded">ConCISE {qa.concise.total}/50</span>
               <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${fillerMeta.color} ${fillerMeta.bg} ${fillerMeta.border}`}>
                 {fillerResult.total === 0 ? '✓ Bersih' : `⚠ ${fillerResult.total} filler`}
@@ -1628,6 +1818,28 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
                   {innerTab === 'analysis' && (
                     <motion.div key="analysis" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="space-y-5">
 
+                      {/* SPENCER & SPENCER COMPETENCY */}
+                      {qa.competency && (
+                        <div className="bg-cyan-500/5 border border-cyan-500/25 rounded-2xl p-4 space-y-2">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 rounded-md text-xs font-mono font-black">
+                                {qa.competency.code}
+                              </span>
+                              <span className="text-xs font-bold text-white">
+                                {qa.competency.name}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
+                              Capaian: Level {qa.competency.level} / 5
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed italic bg-black/20 p-2.5 rounded-xl border border-white/5">
+                            &ldquo;{qa.competency.behavior_note}&rdquo;
+                          </p>
+                        </div>
+                      )}
+
                       {/* STAR — chip rows */}
                       <div>
                         <div className="flex items-center justify-between mb-3">
@@ -1650,6 +1862,36 @@ function QACard({ qa, index }: { qa: QAAnalysis; index: number }) {
                           ))}
                         </div>
                       </div>
+
+                      {/* FACT PROBING METRICS */}
+                      {qa.fact && (
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                              <Target size={11} />Kedalaman Probing FACT
+                            </span>
+                            <span className="text-xs font-mono font-bold text-emerald-400">
+                              {qa.fact.total}<span className="text-slate-600">/40</span>
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {[
+                              { label: 'F · Feeling / Focus', data: qa.fact.feeling, color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/5' },
+                              { label: 'A · Action', data: qa.fact.action, color: 'text-blue-400', border: 'border-blue-500/20', bg: 'bg-blue-500/5' },
+                              { label: 'C · Context / Consequence', data: qa.fact.context, color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/5' },
+                              { label: 'T · Thinking', data: qa.fact.thinking, color: 'text-cyan-400', border: 'border-cyan-500/20', bg: 'bg-cyan-500/5' },
+                            ].map(item => (
+                              <div key={item.label} className={`rounded-xl p-3 border ${item.bg} ${item.border} space-y-1`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-bold text-slate-300">{item.label}</span>
+                                  <span className={`text-xs font-mono font-bold ${item.color}`}>{item.data.score}/10</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 leading-snug italic">{item.data.note}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* ConCISE — horizontal bars */}
                       <div>
