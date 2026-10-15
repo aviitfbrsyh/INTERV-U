@@ -79,7 +79,7 @@ Jawaban Anda:`;
           }));
         } catch {
           return await withRetry(() => ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-3.5-flash-lite",
             contents: prompt,
           }));
         }
@@ -150,7 +150,7 @@ Langsung mulai, jangan perkenalkan diri:`;
           }));
         } catch {
           return await withRetry(() => ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-3.5-flash-lite",
             contents: prompt,
           }));
         }
@@ -224,7 +224,7 @@ Berikan analisis terstruktur untuk JAWABAN BARU saja:
           }));
         } catch {
           return await withRetry(() => ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-3.5-flash-lite",
             contents: prompt,
             config,
           }));
@@ -250,7 +250,7 @@ Berikan analisis terstruktur untuk JAWABAN BARU saja:
 
         try {
           return await withRetry(() => ai.models.generateContent({
-            model: "gemini-2.5-flash-lite",
+            model: "gemini-3.5-flash-lite",
             contents,
           }));
         } catch {

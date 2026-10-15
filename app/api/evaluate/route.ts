@@ -33,9 +33,9 @@ async function generateWithFallback(ai: GoogleGenAI, prompt: string, config: any
       config
     }));
   } catch (err: any) {
-    console.warn('[Fallback] gemini-3-flash-preview failed, falling back to gemini-2.5-flash-lite:', err?.message);
+    console.warn('[Fallback] gemini-3-flash-preview failed, falling back to gemini-3.5-flash-lite:', err?.message);
     return await withRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3.5-flash-lite",
       contents: prompt,
       config
     }));
