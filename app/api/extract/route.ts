@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
+import { executeWithKeyRotation } from '@/lib/gemini-keys';
 
 export const maxDuration = 60;
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 4, delayMs = 2000): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (err: any) {
       const msg = err?.message || '';
       
-      // Do not retry if the free tier quota is permanently exhausted
-      if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('limit: 20')) {
+      // Do not retry if the free tier quota is permanently exhausted on this key
+      if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('limit: 20') || msg.includes('RESOURCE_EXHAUSTED')) {
         throw err;
       }
       
       const isRetryable = err?.status === 429 || err?.status === 503
         || msg.includes('429') || msg.includes('503')
-        || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('UNAVAILABLE')
+        || msg.includes('UNAVAILABLE')
         || msg.includes('fetch failed') || msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT');
         
       if (!isRetryable || i === retries - 1) throw err;
@@ -36,9 +37,9 @@ async function generateWithFallback(ai: GoogleGenAI, parts: any[], config: any) 
       config
     }));
   } catch (err: any) {
-    console.warn(`[Fallback] gemini-3-flash-preview failed, falling back to gemini-2.5-flash:`, err?.message);
+    console.warn(`[Fallback] gemini-3-flash-preview failed, falling back to gemini-2.5-flash-lite:`, err?.message);
     return await withRetry(() => ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: { parts },
       config
     }));
@@ -52,11 +53,6 @@ export async function POST(request: NextRequest) {
       input: { text?: string; file?: { base64: string; mimeType: string } };
     };
 
-    const rawKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-    const apiKey = rawKey.replace(/[^\x20-\x7E]/g, '').trim().replace(/^["']|["']$/g, '');
-    if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
-
-    const ai = new GoogleGenAI({ apiKey });
     const parts: any[] = [];
 
     if (type === 'cv') {
@@ -67,7 +63,8 @@ export async function POST(request: NextRequest) {
         parts.push({ text: `Extract information from this CV text into a structured JSON format: ${input.text}. Be extremely accurate and preserve all details. If something is missing, use empty strings or empty arrays. Ensure responsibilities are clearly split into an array of strings.` });
       }
 
-      const response = await generateWithFallback(ai, parts, {
+      const response = await executeWithKeyRotation('Extract CV', async (ai) => {
+        return await generateWithFallback(ai, parts, {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -123,8 +120,8 @@ export async function POST(request: NextRequest) {
             },
             required: ["profile", "experience", "education", "skills", "projects", "certifications"],
           },
-        }
-      );
+        });
+      });
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     } else {
@@ -153,7 +150,8 @@ INSTRUKSI:
         parts.push({ text: `${jdPrompt}\n\nTEKS JOB DESCRIPTION:\n${input.text}` });
       }
 
-      const response = await generateWithFallback(ai, parts, {
+      const response = await executeWithKeyRotation('Extract JD', async (ai) => {
+        return await generateWithFallback(ai, parts, {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -180,8 +178,8 @@ INSTRUKSI:
             },
             required: ["role", "requirements", "responsibilities", "qualifications", "target_competencies"],
           },
-        }
-      );
+        });
+      });
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     }

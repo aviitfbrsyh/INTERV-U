@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
+import { executeWithKeyRotation } from '@/lib/gemini-keys';
 
 export const maxDuration = 60;
-
-function getApiKey() {
-  const rawKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-  return rawKey.replace(/[^\x20-\x7E]/g, '').trim().replace(/^["']|["']$/g, '');
-}
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): Promise<T> {
   for (let i = 0; i < retries; i++) {
@@ -14,10 +10,12 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): 
       return await fn();
     } catch (err: any) {
       const msg = err?.message || '';
-      if (msg.includes('Quota exceeded') || msg.includes('quota')) throw err;
+      if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('limit: 20') || msg.includes('RESOURCE_EXHAUSTED')) {
+        throw err;
+      }
       const isRetryable = err?.status === 429 || err?.status === 503
         || msg.includes('429') || msg.includes('503')
-        || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('UNAVAILABLE')
+        || msg.includes('UNAVAILABLE')
         || msg.includes('fetch failed');
       if (!isRetryable || i === retries - 1) throw err;
       await new Promise(res => setTimeout(res, delayMs * (i + 1)));
@@ -28,12 +26,6 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): 
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Gemini API key is not configured.' }, { status: 500 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
     const body = await request.json();
     const { action } = body;
 
@@ -79,10 +71,19 @@ PANDUAN MENJAWAB:
 
 Jawaban Anda:`;
 
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      }));
+      const response = await executeWithKeyRotation('Coaching Chat', async (ai) => {
+        try {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: prompt,
+          }));
+        } catch {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+            contents: prompt,
+          }));
+        }
+      });
 
       return NextResponse.json({
         text: response.text || 'Maaf, saya tidak bisa menjawab saat ini. Coba ulangi pertanyaannya?'
@@ -91,20 +92,22 @@ Jawaban Anda:`;
 
     if (action === 'speech') {
       const { text } = body;
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: text,
-        config: {
-          responseModalities: ['AUDIO'],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName: 'Kore',
+      const response = await executeWithKeyRotation('Coaching Speech', async (ai) => {
+        return await withRetry(() => ai.models.generateContent({
+          model: "gemini-2.5-flash-preview-tts",
+          contents: text,
+          config: {
+            responseModalities: ['AUDIO'],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: 'Kore',
+                },
               },
             },
-          },
-        } as Record<string, unknown>,
-      }));
+          } as Record<string, unknown>,
+        }));
+      });
 
       const part = response.candidates?.[0]?.content?.parts?.[0];
       const audioData = (part as { inlineData?: { data?: string; mimeType?: string } })?.inlineData?.data;
@@ -139,10 +142,19 @@ Hack kunci: ${hack}
 
 Langsung mulai, jangan perkenalkan diri:`;
 
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-      }));
+      const response = await executeWithKeyRotation('Coaching Highlight', async (ai) => {
+        try {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: prompt,
+          }));
+        } catch {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+            contents: prompt,
+          }));
+        }
+      });
 
       return NextResponse.json({ text: (response.text || '').trim() });
     }
@@ -167,10 +179,8 @@ Berikan analisis terstruktur untuk JAWABAN BARU saja:
 - improvement_note: 1-2 kalimat dalam gaya bicara Siti yang santai — bandingkan jawaban baru vs lama, apa yang membaik (terutama bukti perilaku nyata), apa yang masih perlu dipoles. Ekspresif, jujur, actionable.
 - is_better: true jika jawaban baru lebih baik dari yang lama, false jika tidak`;
 
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
+      const response = await executeWithKeyRotation('Coaching Practice', async (ai) => {
+        const config = {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -204,17 +214,30 @@ Berikan analisis terstruktur untuk JAWABAN BARU saja:
             },
             required: ["star", "concise", "rating", "improvement_note", "is_better"],
           },
-        },
-      }));
+        };
+
+        try {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: prompt,
+            config,
+          }));
+        } catch {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+            contents: prompt,
+            config,
+          }));
+        }
+      });
 
       return NextResponse.json(JSON.parse(response.text || '{}'));
     }
 
     if (action === 'transcribe') {
       const { base64, mimeType } = body;
-      const response = await withRetry(() => ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{
+      const response = await executeWithKeyRotation('Coaching Transcribe', async (ai) => {
+        const contents = [{
           parts: [
             {
               text: "Transkripsi audio berikut dengan akurat. Kembalikan HANYA teks yang diucapkan dalam Bahasa Indonesia, tanpa label, tanpa penjelasan, tanpa tanda kutip pembuka/penutup.",
@@ -223,8 +246,20 @@ Berikan analisis terstruktur untuk JAWABAN BARU saja:
               inlineData: { mimeType: mimeType || 'audio/webm', data: base64 },
             },
           ],
-        }],
-      }));
+        }];
+
+        try {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-2.5-flash-lite",
+            contents,
+          }));
+        } catch {
+          return await withRetry(() => ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents,
+          }));
+        }
+      });
 
       return NextResponse.json({ text: (response.text || '').trim() });
     }

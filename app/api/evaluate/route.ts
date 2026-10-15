@@ -1,22 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
 import { CrossMatchData } from '@/lib/cross-match';
+import { executeWithKeyRotation } from '@/lib/gemini-keys';
 
 export const maxDuration = 60;
 
-async function callWithRetry(fn: () => Promise<any>, retries = 3, delayMs = 5000): Promise<any> {
+async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (err: any) {
+      const msg = err?.message || '';
+      if (msg.includes('Quota exceeded') || msg.includes('quota') || msg.includes('limit: 20') || msg.includes('RESOURCE_EXHAUSTED')) {
+        throw err;
+      }
       const isRetryable = err?.status === 429 || err?.status === 503
-        || err?.message?.includes('429') || err?.message?.includes('503')
-        || err?.message?.includes('RESOURCE_EXHAUSTED') || err?.message?.includes('UNAVAILABLE');
+        || msg.includes('429') || msg.includes('503')
+        || msg.includes('UNAVAILABLE')
+        || msg.includes('fetch failed') || msg.includes('ECONNRESET');
       if (!isRetryable || i === retries - 1) throw err;
       await new Promise(res => setTimeout(res, delayMs * (i + 1)));
     }
   }
   throw new Error('Max retries reached');
+}
+
+async function generateWithFallback(ai: GoogleGenAI, prompt: string, config: any) {
+  try {
+    return await withRetry(() => ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config
+    }));
+  } catch (err: any) {
+    console.warn('[Fallback] gemini-3-flash-preview failed, falling back to gemini-2.5-flash-lite:', err?.message);
+    return await withRetry(() => ai.models.generateContent({
+      model: "gemini-2.5-flash-lite",
+      contents: prompt,
+      config
+    }));
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -27,12 +50,6 @@ export async function POST(request: NextRequest) {
       jdText: string;
       crossMatchData?: CrossMatchData | null;
     };
-
-    const rawKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-    const apiKey = rawKey.replace(/[^\x20-\x7E]/g, '').trim().replace(/^["']|["']$/g, '');
-    if (!apiKey) return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
-
-    const ai = new GoogleGenAI({ apiKey });
 
     const crossMatchContext = crossMatchData ? `
 HASIL PRE-ANALYSIS CROSS-MATCHING:
@@ -126,10 +143,8 @@ PENTING:
 - Suggestion dan hack harus AKSI YANG BISA LANGSUNG DIPRAKTIKKAN
 - Jika transkrip kosong atau sangat pendek, tetap buat array qa_analysis dengan minimal 1 entri menunjukkan bahwa wawancara tidak cukup data`;
 
-    const response = await callWithRetry(() => ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
+    const response = await executeWithKeyRotation('Evaluate', async (ai) => {
+      return await generateWithFallback(ai, prompt, {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -239,8 +254,8 @@ PENTING:
           },
           required: ["overall_score", "overall_summary", "candidate_archetype", "competency_scores", "qa_analysis", "cv_jd_match", "strengths", "weaknesses", "final_recommendation", "recommendation_verdict"],
         },
-      },
-    }));
+      });
+    });
 
     return NextResponse.json(JSON.parse(response.text || '{}'));
   } catch (err: any) {
