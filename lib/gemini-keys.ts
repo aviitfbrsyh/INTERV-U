@@ -12,24 +12,24 @@ function cleanKey(raw: string): string {
 export function getGeminiApiKeys(): string[] {
   const keys: string[] = [];
 
-  // 1. GEMINI_API_KEY (mendukung pemisah koma: key1,key2,key3)
+  // 1. GEMINI_API_KEY (mendukung pemisah koma atau baris baru / enter)
   const main = process.env.GEMINI_API_KEY || '';
   if (main) {
-    keys.push(...main.split(',').map(cleanKey));
+    keys.push(...main.split(/[\r\n,]+/).map(cleanKey));
   }
 
   // 2. NEXT_PUBLIC_GEMINI_API_KEY
   const pub = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
   if (pub) {
-    keys.push(...pub.split(',').map(cleanKey));
+    keys.push(...pub.split(/[\r\n,]+/).map(cleanKey));
   }
 
   // 3. Cadangan eksplisit jika diisi terpisah di Vercel
   const b1 = process.env.GEMINI_API_KEY_BACKUP || '';
-  if (b1) keys.push(...b1.split(',').map(cleanKey));
+  if (b1) keys.push(...b1.split(/[\r\n,]+/).map(cleanKey));
 
   const b2 = process.env.GEMINI_API_KEY_BACKUP_2 || '';
-  if (b2) keys.push(...b2.split(',').map(cleanKey));
+  if (b2) keys.push(...b2.split(/[\r\n,]+/).map(cleanKey));
 
   // Hapus duplikat dan pastikan panjang key valid
   return Array.from(new Set(keys)).filter(k => k.length > 10);
