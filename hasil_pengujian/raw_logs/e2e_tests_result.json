@@ -1,0 +1,38 @@
+[
+  {
+    "testId": "TC-E2E-01",
+    "name": "Landing Page Load & Elemen Utama",
+    "status": "LULUS",
+    "durationMs": 11400,
+    "details": "URL akhir: http://localhost:3000/ | Title: \"Intervyou | AI Interview Simulator\" | H1: \"AI InterviewSimulator\"",
+    "screenshotPath": "D:\\intervyou edit bu rina\\INTERV-U\\hasil_pengujian\\screenshots\\e2e01_landing_page.png",
+    "timestamp": "2026-10-15T13:48:30.113Z"
+  },
+  {
+    "testId": "TC-E2E-02",
+    "name": "Halaman Login - Form & Tombol Tersedia",
+    "status": "LULUS",
+    "durationMs": 10857,
+    "details": "URL: http://localhost:3000/login | Title: \"Intervyou | AI Interview Simulator\" | Tombol Google: ada (1 el) | Teks Login/Masuk: ditemukan",
+    "screenshotPath": "D:\\intervyou edit bu rina\\INTERV-U\\hasil_pengujian\\screenshots\\e2e02_login_page.png",
+    "timestamp": "2026-10-15T13:48:42.846Z"
+  },
+  {
+    "testId": "TC-E2E-03",
+    "name": "Responsivitas Mobile View (390px)",
+    "status": "LULUS",
+    "durationMs": 3211,
+    "details": "URL: http://localhost:3000/ | Body width: 390px (viewport: 390px) | Horizontal scroll: TIDAK ADA (✓ responsif) | Konten terisi: Ya",
+    "screenshotPath": "D:\\intervyou edit bu rina\\INTERV-U\\hasil_pengujian\\screenshots\\e2e03_mobile_view.png",
+    "timestamp": "2026-10-15T13:48:47.572Z"
+  },
+  {
+    "testId": "TC-E2E-04",
+    "name": "Performa Halaman (Navigation Timing)",
+    "status": "LULUS",
+    "durationMs": 2826,
+    "details": "TTFB: 1636ms | DOM Ready: 2129ms | Full Load: 2759ms | Total E2E: 2826ms",
+    "screenshotPath": "D:\\intervyou edit bu rina\\INTERV-U\\hasil_pengujian\\screenshots\\e2e04_performance.png",
+    "timestamp": "2026-10-15T13:48:50.972Z"
+  }
+]

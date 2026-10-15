@@ -1,0 +1,24 @@
+{
+  "project_name": "INTERV-U (AI Interview Simulator)",
+  "timestamp": "2026-10-15T20:36:30+07:00",
+  "environment": {
+    "os": "Microsoft Windows 11 Education 64-bit (10.0.22621)",
+    "cpu": "Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz (2 Cores, 4 Threads)",
+    "memory_total_kb": 4059364,
+    "node_version": "v22.16.0",
+    "npm_version": "10.9.2",
+    "python_version": "3.10.0",
+    "nextjs_version": "15.4.9",
+    "react_version": "19.2.1",
+    "google_genai_version": "1.17.0",
+    "tailwind_version": "4.1.11",
+    "firebase_version": "12.19.0"
+  },
+  "test_datasets": {
+    "cv_file": "CV_Avit_Febriansyah.pdf",
+    "cv_file_size_bytes": 77413,
+    "job_posting_file": "loker.jpeg",
+    "job_posting_size_bytes": 57532,
+    "competency_framework": "Spencer & Spencer (1993) Competency Dictionary"
+  }
+}

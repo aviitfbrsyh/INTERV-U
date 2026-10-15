@@ -20,3 +20,5 @@ quizzical-*.md
 /*.bak
 /BINGKAI.HTML
 .npm-cache/
+~$*
+

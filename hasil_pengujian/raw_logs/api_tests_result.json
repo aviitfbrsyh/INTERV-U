@@ -1,0 +1,82 @@
+[
+  {
+    "testId": "TC-API-01",
+    "name": "GET /api/live-token (Status & Format)",
+    "status": "LULUS",
+    "durationMs": 1327,
+    "details": "Token diterima (panjang: 76 chars)",
+    "timestamp": "2026-10-15T13:41:11.595Z"
+  },
+  {
+    "testId": "TC-API-02",
+    "name": "POST /api/extract CV PDF Riil (CV_Avit_Febriansyah.pdf)",
+    "status": "LULUS",
+    "durationMs": 15929,
+    "details": "Kandidat: AVIT FEBRIANSYAH, Skills: 49 item, Pengalaman: 2 entri",
+    "timestamp": "2026-10-15T13:41:27.539Z"
+  },
+  {
+    "testId": "TC-API-03",
+    "name": "POST /api/extract JD Gambar Riil (loker.jpeg) -> Spencer & Spencer",
+    "status": "LULUS",
+    "durationMs": 19381,
+    "details": "Posisi: Full Stack Developer, Terpetakan ke: 5 Kompetensi Spencer & Spencer (EXP, AT, CO, CT, ACH)",
+    "timestamp": "2026-10-15T13:41:46.929Z"
+  },
+  {
+    "testId": "TC-API-04",
+    "name": "POST /api/extract (Negative: Empty Input Graceful Handling)",
+    "status": "LULUS",
+    "durationMs": 5279,
+    "details": "Server menangani payload kosong dengan status: 200",
+    "timestamp": "2026-10-15T13:41:52.210Z"
+  },
+  {
+    "testId": "TC-API-05",
+    "name": "POST /api/cross-match (CV vs JD Gap Analysis)",
+    "status": "LULUS",
+    "durationMs": 15112,
+    "details": "Match Score: 65/100, Matched Skills: 12, Focus Areas: 5",
+    "timestamp": "2026-10-15T13:42:07.325Z"
+  },
+  {
+    "testId": "TC-API-06",
+    "name": "POST /api/evaluate LLM-as-a-Judge (STAR, FACT, ConCISE, Spencer & Spencer)",
+    "status": "LULUS",
+    "durationMs": 43977,
+    "details": "Overall Score: 92/100, Archetype: The Star Performer (Jawara Sejati), Avg STAR: 4.0/4, Avg FACT: 36.0/40, QA Count: 4",
+    "timestamp": "2026-10-15T13:42:51.317Z"
+  },
+  {
+    "testId": "TC-API-07",
+    "name": "POST /api/coaching (Action: Chat - Tanya Siti)",
+    "status": "LULUS",
+    "durationMs": 8007,
+    "details": "Respons Siti (1151 chars): \"Halo Avit, senang sekali melihat hasil evaluasi Anda. Sebagai mentor, saya sangat terkesan...\"",
+    "timestamp": "2026-10-15T13:42:59.325Z"
+  },
+  {
+    "testId": "TC-API-08",
+    "name": "POST /api/coaching (Action: Speech - Gemini TTS Audio)",
+    "status": "LULUS",
+    "durationMs": 6185,
+    "details": "Audio base64 diterima (MIME: audio/L16;codec=pcm;rate=24000, size: 333504 chars)",
+    "timestamp": "2026-10-15T13:43:05.523Z"
+  },
+  {
+    "testId": "TC-API-09",
+    "name": "POST /api/coaching (Action: Practice Retry Comparison)",
+    "status": "LULUS",
+    "durationMs": 7643,
+    "details": "Is Better: true, Rating Baru: 8/10, STAR Baru: 3/4, Note: \"Nah, gitu dong! Jauh lebih keren karena kamu kasih liat 'isi...\"",
+    "timestamp": "2026-10-15T13:43:13.168Z"
+  },
+  {
+    "testId": "TC-API-10",
+    "name": "POST /api/coaching (Action: Highlight Ulasan Lisan)",
+    "status": "LULUS",
+    "durationMs": 7743,
+    "details": "Teks ulasan dihasilkan (751 chars): \"Wah, jujur ya, jawaban kamu tadi tuh \"to the point\" banget, tapi saking singkatn...\"",
+    "timestamp": "2026-10-15T13:43:20.913Z"
+  }
+]

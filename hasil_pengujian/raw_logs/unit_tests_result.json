@@ -1,0 +1,72 @@
+[
+  {
+    "testId": "TC-UNIT-01",
+    "name": "Filler Words Clean Level",
+    "status": "LULUS",
+    "details": "Total: 0, Level: clean",
+    "timestamp": "2026-10-15T13:41:29.660Z"
+  },
+  {
+    "testId": "TC-UNIT-02",
+    "name": "Filler Words Minimal Level",
+    "status": "LULUS",
+    "details": "Total: 2, Level: minimal",
+    "timestamp": "2026-10-15T13:41:29.664Z"
+  },
+  {
+    "testId": "TC-UNIT-03",
+    "name": "Filler Words Moderate Level",
+    "status": "LULUS",
+    "details": "Total: 4, Level: moderate",
+    "timestamp": "2026-10-15T13:41:29.664Z"
+  },
+  {
+    "testId": "TC-UNIT-04",
+    "name": "Filler Words Heavy Level",
+    "status": "LULUS",
+    "details": "Total: 9, Level: heavy",
+    "timestamp": "2026-10-15T13:41:29.664Z"
+  },
+  {
+    "testId": "TC-UNIT-05",
+    "name": "Filler Words False Positive Resistance",
+    "status": "LULUS",
+    "details": "Total: 0 (Kata 'teh' & 'manual' tidak boleh memicu 'eh' atau 'anu')",
+    "timestamp": "2026-10-15T13:41:29.664Z"
+  },
+  {
+    "testId": "TC-UNIT-06",
+    "name": "Filler Words Case Insensitivity",
+    "status": "LULUS",
+    "details": "Total: 3 (EH, HMM, KAYAK harus terdeteksi)",
+    "timestamp": "2026-10-15T13:41:29.664Z"
+  },
+  {
+    "testId": "TC-UNIT-07",
+    "name": "Audio WAV RIFF & WAVE Identifiers",
+    "status": "LULUS",
+    "details": "Header 0-4: RIFF, Header 8-12: WAVE",
+    "timestamp": "2026-10-15T13:41:29.665Z"
+  },
+  {
+    "testId": "TC-UNIT-08",
+    "name": "Audio WAV Specs Verification",
+    "status": "LULUS",
+    "details": "FormatTag: 1 (PCM), Channels: 1, SampleRate: 24000Hz, BitDepth: 16bit",
+    "timestamp": "2026-10-15T13:41:29.666Z"
+  },
+  {
+    "testId": "TC-UNIT-09",
+    "name": "JSON Field Extraction Helper",
+    "status": "LULUS",
+    "details": "Extracted: Frontend Developer",
+    "timestamp": "2026-10-15T13:41:29.667Z"
+  },
+  {
+    "testId": "TC-UNIT-10",
+    "name": "Field Extraction Empty Fallback",
+    "status": "LULUS",
+    "details": "Extracted: ''",
+    "timestamp": "2026-10-15T13:41:29.667Z"
+  }
+]

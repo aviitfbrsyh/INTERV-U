@@ -1,0 +1,702 @@
+{
+  "TC-API-01": {
+    "status": 200,
+    "token_prefix": "auth_tokens/3d9c1c84..."
+  },
+  "TC-API-02": {
+    "profile": {
+      "name": "AVIT FEBRIANSYAH",
+      "email": "23523238@students.uii.ac.id",
+      "phone": "0852-3831-9903",
+      "location": "Yogyakarta"
+    },
+    "experience": [
+      {
+        "role": "Asisten Laboratorium Sistem Informasi dan Rekayasa Perangkat Lunak",
+        "company": "Laboratorium SIRKEL, Universitas Islam Indonesia - Yogyakarta",
+        "duration": "9 Okt 2025 - 9 Des 2025",
+        "responsibilities": [
+          "Mendukung pembelajaran praktikum pada bidang pengembangan aplikasi web, pengembangan aplikasi bergerak (mobile), fundamen pengembangan aplikasi, dan pengembangan sistem informasi.",
+          "Mendampingi mahasiswa selama kegiatan laboratorium yang berkaitan dengan pengembangan aplikasi dan sistem informasi."
+        ]
+      },
+      {
+        "role": "Asisten Laboratorium",
+        "company": "Laboratorium Sistem dan Jaringan Komputer, UII - Yogyakarta",
+        "duration": "9 Okt 2025 - 9 Des 2025",
+        "responsibilities": [
+          "Membantu mahasiswa selama sesi laboratorium dan mendukung pembelajaran praktik terkait sistem komputer dan jaringan komputer.",
+          "Memberikan dukungan teknis selama kegiatan praktikum berlangsung."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "degree": "Sarjana Informatika, 3,66/4,00",
+        "institution": "Universitas Islam Indonesia - Yogyakarta",
+        "year": "2023 - 2027 (Estimasi)"
+      }
+    ],
+    "skills": [
+      "TypeScript",
+      "JavaScript",
+      "PHP",
+      "Dart",
+      "Kotlin",
+      "Python",
+      "HTML",
+      "CSS",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Framer Motion",
+      "Flutter",
+      "Jetpack Compose",
+      "Material 3",
+      "Node.js",
+      "Laravel",
+      "Firebase",
+      "Authentication",
+      "Firestore",
+      "Storage",
+      "Cloud Functions",
+      "REST API",
+      "Android",
+      "Google Gemini (Flash, Live API, Pro)",
+      "Clean Architecture",
+      "MVVM",
+      "Repository Pattern",
+      "Use Cases",
+      "Git",
+      "GitHub",
+      "VS Code",
+      "Android Studio",
+      "Node.js/npm",
+      "Linux",
+      "Docker",
+      "Jenkins",
+      "CI/CD",
+      "Problem Solving",
+      "Teamwork",
+      "Communication",
+      "Leadership",
+      "Public Speaking",
+      "Time & Project Management",
+      "Critical Thinking",
+      "Adaptability",
+      "Collaboration",
+      "Bahasa Indonesia",
+      "Bahasa Inggris"
+    ],
+    "projects": [
+      {
+        "name": "IntervYou - Platform Persiapan Wawancara Berbasis AI",
+        "description": "Mengembangkan platform simulasi wawancara kerja berbasis AI dengan interaksi suara real-time dan evaluasi otomatis setelah wawancara. Fitur termasuk Deep Extraction untuk ekstraksi data terstruktur, Voice Live untuk wawancara dua arah real-time, dan Divine Eval untuk evaluasi pasca-wawancara."
+      },
+      {
+        "name": "FitOutfit - Asisten Fashion Berbasis AI (Aplikasi Mobile)",
+        "description": "Mengembangkan aplikasi mobile yang membantu pengguna memilih outfit berdasarkan bentuk tubuh, warna kulit, personal color, acara/aktivitas, dan koleksi pakaian yang dimiliki dengan fitur Virtual Try-On dan Wardrobe Assistant."
+      },
+      {
+        "name": "KompasKampus - Platform Rekomendasi Program Studi UII",
+        "description": "Membangun platform web untuk membantu calon mahasiswa menentukan pilihan program studi dan memahami peluang penerimaan di Universitas Islam Indonesia dengan fitur tes kelayakan dan rekomendasi program studi."
+      },
+      {
+        "name": "Desa Berkah - Sistem Informasi Zakat, Infaq, dan Sedekah",
+        "description": "Mengembangkan sistem informasi berbasis web untuk mengelola kegiatan zakat, infaq, dan sedekah."
+      },
+      {
+        "name": "SparIN - Aplikasi Mobile Pencarian Partner Olahraga",
+        "description": "Aplikasi Android untuk mencari lawan sparing, membuat dan bergabung ke room olahraga, bergabung ke komunitas, dan mengikuti kampanye/event menggunakan Kotlin dan Firebase."
+      },
+      {
+        "name": "Every Pause - \"Pause Before You Buy\"",
+        "description": "Proyek final ICDL Asia Digital Challenge 2026 tentang pembelian yang lebih sadar dan konsumsi bertanggung jawab."
+      },
+      {
+        "name": "Desa Peduli Connect",
+        "description": "Aplikasi web menggunakan TypeScript, JavaScript, HTML, CSS."
+      },
+      {
+        "name": "HOSTINGIN Phase 3",
+        "description": "Proyek web menggunakan JavaScript, Python, HTML, CSS."
+      },
+      {
+        "name": "Dashboard Profesional POS Kasir",
+        "description": "Dashboard point-of-sale menggunakan HTML dan JavaScript."
+      },
+      {
+        "name": "MADM-PANGAN",
+        "description": "Aplikasi web menggunakan PHP, CSS, JavaScript."
+      }
+    ],
+    "certifications": [
+      "ICDL Asia Digital Challenge 2026 - Award Recipient - Business Track, Tertiary Level"
+    ]
+  },
+  "TC-API-03": {
+    "role": "Full Stack Developer",
+    "requirements": [
+      "Pendidikan Min. S1 (Terbuka untuk semua jurusan)",
+      "Berpengalaman minimal 2-3 tahun sebagai Full Stack Developer atau peran serupa",
+      "Menguasai HTML, CSS, JavaScript secara mendalam dan penggunaan framework modern (React.js, Angular, atau Vue.js)",
+      "Menguasai PHP dan framework Laravel",
+      "Menguasai database MySQL dan NoSQL (MongoDB, Redis)",
+      "Menguasai tools CI/CD pipeline",
+      "Familiar dengan Git dan version control dalam workflow development",
+      "Bersedia untuk WFO di Batam"
+    ],
+    "responsibilities": [
+      "Membangun UI/UX yang responsif dan interaktif sesuai desain dari Figma",
+      "Membangun tampilan website (komponen front-end) yang menarik, responsif, dan mudah diakses oleh pengguna",
+      "Mengembangkan bagian sistem server, logika aplikasi, dan pemrograman back-end",
+      "Membuat, mengelola, dan memastikan perlindungan yang kuat pada database",
+      "Melakukan testing, troubleshooting, dan debugging",
+      "Melakukan proses deployment memastikan pemeliharaan sistem pasca-deployment"
+    ],
+    "qualifications": [
+      "Minimal lulusan S1 (Sarjana)",
+      "Memiliki portofolio pengembangan aplikasi Full Stack",
+      "Pengalaman 2-3 tahun dalam ekosistem Laravel dan Framework JavaScript"
+    ],
+    "target_competencies": [
+      {
+        "code": "EXP",
+        "name": "Technical/Professional Expertise",
+        "cluster": "Technical",
+        "importance": "High",
+        "rationale": "Kandidat wajib menguasai stack teknologi spesifik (PHP, Laravel, JS Framework, MySQL/NoSQL) untuk menjalankan tugas pengembangan front-end dan back-end.",
+        "behavioral_focus": "Gali kedalaman pemahaman teknis mengenai integrasi Laravel dengan React/Vue serta manajemen database NoSQL."
+      },
+      {
+        "code": "AT",
+        "name": "Analytical Thinking",
+        "cluster": "Cognitive",
+        "importance": "High",
+        "rationale": "Sangat dibutuhkan dalam aktivitas troubleshooting dan debugging untuk mengurai masalah logika aplikasi yang kompleks.",
+        "behavioral_focus": "Identifikasi cara kandidat mendiagnosa akar masalah (root cause) saat terjadi error sistem yang tidak terduga."
+      },
+      {
+        "code": "CO",
+        "name": "Concern for Order, Quality and Accuracy",
+        "cluster": "Self-Management",
+        "importance": "Medium",
+        "rationale": "Tercermin dari tanggung jawab melakukan testing dan memastikan perlindungan keamanan pada database serta pemeliharaan pasca-deployment.",
+        "behavioral_focus": "Amati disiplin kandidat dalam penulisan unit testing, dokumentasi kode, dan standar keamanan data."
+      },
+      {
+        "code": "CT",
+        "name": "Conceptual Thinking",
+        "cluster": "Cognitive",
+        "importance": "Medium",
+        "rationale": "Diperlukan untuk menerjemahkan desain Figma ke dalam arsitektur sistem yang modular dan dapat dikembangkan (scalable).",
+        "behavioral_focus": "Minta kandidat menjelaskan bagaimana mereka merancang alur data antara front-end dan back-end secara efisien."
+      },
+      {
+        "code": "ACH",
+        "name": "Achievement Orientation",
+        "cluster": "Achievement",
+        "importance": "Medium",
+        "rationale": "Fokus pada pembuatan tampilan yang menarik dan responsif menunjukkan dorongan untuk mencapai standar kualitas UI/UX yang tinggi.",
+        "behavioral_focus": "Tanyakan upaya yang dilakukan kandidat untuk mengoptimalkan performa kecepatan loading website atau efisiensi query database."
+      }
+    ]
+  },
+  "TC-API-04": {
+    "profile": {
+      "name": "",
+      "email": "",
+      "phone": "",
+      "location": ""
+    },
+    "experience": [],
+    "education": [],
+    "skills": [],
+    "projects": [],
+    "certifications": []
+  },
+  "TC-API-05": {
+    "match_score": 65,
+    "matched_skills": [
+      "PHP",
+      "Laravel",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "HTML",
+      "CSS",
+      "Git",
+      "CI/CD",
+      "Docker",
+      "Node.js",
+      "Firebase"
+    ],
+    "skill_gaps": [
+      "2-3 years professional work experience",
+      "MySQL",
+      "MongoDB",
+      "Redis",
+      "Relocation to Batam",
+      "Experience in large-scale corporate systems"
+    ],
+    "experience_verdict": "Kandidat adalah seorang Junior/Mahasiswa berprestasi dengan portofolio proyek yang sangat kuat dan relevansi teknologi yang tinggi, namun belum memenuhi syarat pengalaman profesional minimal 2-3 tahun di industri.",
+    "focus_areas": [
+      "Technical Expertise (EXP): Menggali pemahaman mendalam tentang optimasi database SQL (MySQL) dan NoSQL (Redis/MongoDB) karena profil lebih banyak menggunakan Firebase.",
+      "Analytical Thinking (AT): Meminta bukti nyata saat mendiagnosa bug kompleks pada sistem 'Desa Berkah' atau platform AI yang mereka bangun.",
+      "Concern for Order (CO): Probing mengenai implementasi unit testing dan standar keamanan data pada backend Laravel yang pernah dibuat.",
+      "Achievement Orientation (ACH): Menanyakan metrik keberhasilan dalam optimasi performa loading atau efisiensi query pada proyek Full Stack.",
+      "Work Commitment: Mengonfirmasi kesediaan relokasi ke Batam (WFO) mengingat kandidat saat ini berlokasi di Yogyakarta dan masih dalam masa studi."
+    ],
+    "summary": "Avit menunjukkan potensi teknis luar biasa dalam ekosistem PHP/Laravel dan React, didukung pemahaman arsitektur modern (Clean Architecture/MVVM). Namun, secara profil pengalaman, ia masih berada pada level entry-level/student (Lab Assistant) yang kontras dengan permintaan JD untuk level mid (2-3 tahun). Ia sangat cocok sebagai High-Potential Junior Developer jika perusahaan bersedia melakukan penyesuaian pada syarat pengalaman."
+  },
+  "TC-API-06": {
+    "overall_score": 92,
+    "overall_summary": "Avit menunjukkan profil teknis yang sangat superior untuk levelnya, dengan penguasaan mendalam pada ekosistem JavaScript modern dan best practices engineering seperti CI/CD dan unit testing. Meskipun secara formal masih mahasiswa dan belum memenuhi syarat pengalaman 2-3 tahun, kualitas jawaban dan bukti aksi nyata (STAR) yang diberikan setara dengan level Mid-Senior Developer.",
+    "candidate_archetype": {
+      "type": "star_performer",
+      "label": "The Star Performer (Jawara Sejati)",
+      "description": "Kandidat menunjukkan konsistensi tinggi dalam memberikan jawaban yang terstruktur, berbasis data/metrik, dan menunjukkan penguasaan alat teknis yang sangat spesifik.",
+      "warning_level": "positive",
+      "key_evidence": [
+        "Menyebutkan metrik spesifik seperti peningkatan load time 40% dan skor Lighthouse 98",
+        "Mampu menjelaskan workflow teknis yang kompleks (Husky, MSW, Compound Components) dengan jernih",
+        "Menunjukkan inisiatif proaktif di luar jam kerja untuk efisiensi tim"
+      ],
+      "hr_perspective": "Kandidat ini adalah 'hidden gem'. Meskipun gap pengalaman tahunan ada, kompetensi teknisnya melampaui kebutuhan JD. Rekrut segera sebelum diambil kompetitor."
+    },
+    "competency_scores": [
+      {
+        "code": "EXP",
+        "name": "Technical/Professional Expertise",
+        "level": 4,
+        "score": 95,
+        "summary": "Sangat menguasai stack modern (Next.js, Zustand, TanStack) dan mampu mengintegrasikannya untuk solusi performa tinggi."
+      },
+      {
+        "code": "AT",
+        "name": "Analytical Thinking",
+        "level": 3,
+        "score": 88,
+        "summary": "Mampu melakukan root cause analysis menggunakan tools diagnostik (Chrome DevTools) untuk masalah memori yang kompleks."
+      },
+      {
+        "code": "ACH",
+        "name": "Achievement Orientation",
+        "level": 4,
+        "score": 94,
+        "summary": "Memiliki dorongan internal untuk melampaui target standar, terbukti dari optimasi skor Lighthouse yang sangat tinggi."
+      },
+      {
+        "code": "CO",
+        "name": "Concern for Order, Quality and Accuracy",
+        "level": 3,
+        "score": 90,
+        "summary": "Sangat disiplin dalam automation testing dan standarisasi kode melalui pre-commit hooks dan CI pipelines."
+      },
+      {
+        "code": "CT",
+        "name": "Conceptual Thinking",
+        "level": 3,
+        "score": 85,
+        "summary": "Mampu menyederhanakan kompleksitas kode melalui pola desain (Compound Components) yang modular."
+      }
+    ],
+    "qa_analysis": [
+      {
+        "question": "Halo Mas Avit, selamat datang di sesi wawancara. Ceritakan situasi saat Anda membangun arsitektur antarmuka web kompleks dan bagaimana Anda mengelola state-nya?",
+        "answer": "Di proyek sebelumnya, saya membangun dashboard analitik dengan Next.js. Untuk state management, saya mengimplementasikan Zustand untuk client UI state dan TanStack React Query untuk server-state caching, sehingga meminimalisir re-render berlebih dan mempercepat load time hingga 40%.",
+        "star": {
+          "situation": {
+            "present": true,
+            "evidence": "Membangun dashboard analitik dengan Next.js"
+          },
+          "task": {
+            "present": true,
+            "evidence": "Mengelola state management dalam arsitektur kompleks"
+          },
+          "action": {
+            "present": true,
+            "evidence": "Mengimplementasikan Zustand dan TanStack React Query"
+          },
+          "result": {
+            "present": true,
+            "evidence": "Meminimalisir re-render dan percepatan load time 40%"
+          },
+          "score": 4
+        },
+        "fact": {
+          "feeling": {
+            "score": 8,
+            "note": "Percaya diri dalam menjelaskan pilihan teknologi"
+          },
+          "action": {
+            "score": 9,
+            "note": "Spesifik dalam menyebutkan tools yang digunakan secara mandiri"
+          },
+          "context": {
+            "score": 8,
+            "note": "Konteks dashboard analitik relevan dengan kebutuhan data intensif"
+          },
+          "thinking": {
+            "score": 9,
+            "note": "Memahami perbedaan antara client-state dan server-state"
+          },
+          "total": 34
+        },
+        "competency": {
+          "code": "EXP",
+          "name": "Technical/Professional Expertise",
+          "level": 3,
+          "behavior_note": "Mampu menggunakan teknologi spesifik untuk meningkatkan efisiensi sistem secara nyata."
+        },
+        "concise": {
+          "consistency": {
+            "score": 10,
+            "note": "Sangat nyambung"
+          },
+          "clarity": {
+            "score": 9,
+            "note": "Terminologi teknis digunakan dengan tepat"
+          },
+          "information": {
+            "score": 9,
+            "note": "Detail metrik 40% sangat membantu"
+          },
+          "structure": {
+            "score": 10,
+            "note": "Jawaban padat dan berisi"
+          },
+          "effectiveness": {
+            "score": 10,
+            "note": "Langsung menjawab inti arsitektur dan state"
+          },
+          "total": 48
+        },
+        "rating": 9,
+        "suggestion": "Bisa ditambahkan sedikit tantangan spesifik saat sinkronisasi antara Zustand dan React Query agar lebih dinamis.",
+        "hack": "Sebutkan alasan mengapa memilih Zustand dibandingkan Redux untuk menunjukkan kedalaman riset arsitektur.",
+        "better_answer_example": "Saya membangun dashboard analitik Next.js yang menangani ribuan data point. Saya memisahkan server-state menggunakan TanStack Query untuk caching otomatis dan Zustand untuk UI state yang ringan. Hasilnya, performa load time naik 40% karena re-render yang terisolasi."
+      },
+      {
+        "question": "Pernahkah Anda menghadapi bug kritis atau penurunan performa di sistem? Ceritakan bagaimana Anda membedah akar masalahnya?",
+        "answer": "Pernah, saat rilis fitur baru terjadi memory leak di halaman tabel besar. Saya menggunakan Chrome DevTools Memory Profiler dan Heap Snapshot. Dari situ saya menemukan event listener scroll di window tidak dibersihkan saat komponen di-unmount. Saya memperbaikinya dengan menambahkan cleanup function di useEffect.",
+        "star": {
+          "situation": {
+            "present": true,
+            "evidence": "Memory leak di halaman tabel besar saat rilis fitur"
+          },
+          "task": {
+            "present": true,
+            "evidence": "Membedah akar masalah penurunan performa"
+          },
+          "action": {
+            "present": true,
+            "evidence": "Menggunakan Chrome DevTools Memory Profiler dan menambahkan cleanup function"
+          },
+          "result": {
+            "present": true,
+            "evidence": "Masalah diperbaiki dan memory leak teratasi"
+          },
+          "score": 4
+        },
+        "fact": {
+          "feeling": {
+            "score": 8,
+            "note": "Tenang dalam menghadapi situasi kritis"
+          },
+          "action": {
+            "score": 10,
+            "note": "Tindakan teknis sangat eksplisit (Heap Snapshot)"
+          },
+          "context": {
+            "score": 9,
+            "note": "Situasi rilis fitur baru memberikan tekanan tinggi"
+          },
+          "thinking": {
+            "score": 10,
+            "note": "Logika debug yang sistematis dari profiler ke kode"
+          },
+          "total": 37
+        },
+        "competency": {
+          "code": "AT",
+          "name": "Analytical Thinking",
+          "level": 3,
+          "behavior_note": "Mendiagnosa hubungan sebab-akibat yang tidak terlihat langsung (memory leak dari event listener)."
+        },
+        "concise": {
+          "consistency": {
+            "score": 10,
+            "note": "Sangat konsisten"
+          },
+          "clarity": {
+            "score": 10,
+            "note": "Langkah-langkah debug sangat jelas"
+          },
+          "information": {
+            "score": 10,
+            "note": "Informasi tools dan solusi sangat detail"
+          },
+          "structure": {
+            "score": 10,
+            "note": "Alur cerita sangat rapi"
+          },
+          "effectiveness": {
+            "score": 10,
+            "note": "Jawaban yang sangat memuaskan bagi interviewer teknis"
+          },
+          "total": 50
+        },
+        "rating": 10,
+        "suggestion": "Pertahankan penggunaan nama tool spesifik karena ini memvalidasi keahlian Anda.",
+        "hack": "Gunakan kata kunci 'Heap Snapshot' atau 'Flame Chart' untuk menunjukkan Anda benar-benar melakukan debugging tingkat dalam.",
+        "better_answer_example": "Saat rilis fitur tabel besar, terjadi lag parah. Saya menganalisis Heap Snapshot di Chrome DevTools dan menemukan ribuan objek tertinggal. Ternyata scroll listener di useEffect tidak memiliki cleanup function; setelah saya tambahkan, penggunaan memori stabil kembali."
+      },
+      {
+        "question": "Ceritakan pengalaman ketika Anda menetapkan target optimasi performa melebihi ekspektasi awal?",
+        "answer": "Awalnya target Google Lighthouse skor 80. Namun saya melakukan code-splitting dinamis pada Three.js dan lazy-loading aset gambar WebP, sehingga skor Lighthouse mencapai 92 di mobile dan 98 di desktop.",
+        "star": {
+          "situation": {
+            "present": true,
+            "evidence": "Optimasi performa dengan target awal 80"
+          },
+          "task": {
+            "present": true,
+            "evidence": "Meningkatkan performa web melebihi target"
+          },
+          "action": {
+            "present": true,
+            "evidence": "Code-splitting dinamis Three.js dan lazy-loading WebP"
+          },
+          "result": {
+            "present": true,
+            "evidence": "Skor 92 di mobile dan 98 di desktop"
+          },
+          "score": 4
+        },
+        "fact": {
+          "feeling": {
+            "score": 9,
+            "note": "Menunjukkan ambisi positif untuk kualitas"
+          },
+          "action": {
+            "score": 9,
+            "note": "Tindakan optimasi sangat spesifik"
+          },
+          "context": {
+            "score": 8,
+            "note": "Tantangan Three.js (3D) biasanya berat untuk performa"
+          },
+          "thinking": {
+            "score": 9,
+            "note": "Tahu teknik mana yang memberikan impak terbesar"
+          },
+          "total": 35
+        },
+        "competency": {
+          "code": "ACH",
+          "name": "Achievement Orientation",
+          "level": 4,
+          "behavior_note": "Menetapkan dan mencapai standar keunggulan yang menantang (skor 98)."
+        },
+        "concise": {
+          "consistency": {
+            "score": 10,
+            "note": "Sangat relevan"
+          },
+          "clarity": {
+            "score": 10,
+            "note": "Angka yang disebutkan sangat jelas"
+          },
+          "information": {
+            "score": 9,
+            "note": "Sangat informatif"
+          },
+          "structure": {
+            "score": 9,
+            "note": "Struktur perbandingan target vs hasil bagus"
+          },
+          "effectiveness": {
+            "score": 10,
+            "note": "Sangat efektif"
+          },
+          "total": 48
+        },
+        "rating": 10,
+        "suggestion": "Ceritakan sedikit mengapa skor 80 dianggap kurang bagi Anda secara pribadi.",
+        "hack": "Selalu bandingkan target awal vs pencapaian akhir dalam bentuk angka/metrik.",
+        "better_answer_example": "Meskipun target tim hanya skor Lighthouse 80, saya merasa pengalaman pengguna bisa lebih baik. Saya mengimplementasikan code-splitting dinamis pada library berat seperti Three.js. Hasilnya, kami meraih skor 98 di desktop, jauh melampaui KPI awal."
+      },
+      {
+        "question": "Pernahkah Anda mengambil inisiatif teknis penting tanpa menunggu perintah atasan? Ceritakan peristiwa tersebut.",
+        "answer": "Saya melihat tim sering lambat saat integrasi API karena belum ada dokumentasi TypeScript yang konsisten. Saya berinisiatif membuat shared interface types dan Mock Service Worker (MSW) mandiri di weekend. Inisiatif ini memangkas waktu blocker tim hingga 2 hari kerja.",
+        "star": {
+          "situation": {
+            "present": true,
+            "evidence": "Tim lambat saat integrasi API karena kurang dokumentasi"
+          },
+          "task": {
+            "present": true,
+            "evidence": "Mengurangi blocker integrasi"
+          },
+          "action": {
+            "present": true,
+            "evidence": "Membuat shared interface types dan MSW di weekend"
+          },
+          "result": {
+            "present": true,
+            "evidence": "Memangkas blocker hingga 2 hari kerja"
+          },
+          "score": 4
+        },
+        "fact": {
+          "feeling": {
+            "score": 10,
+            "note": "Kepedulian tinggi terhadap produktivitas tim"
+          },
+          "action": {
+            "score": 10,
+            "note": "Inisiatif mandiri bahkan di luar jam kerja"
+          },
+          "context": {
+            "score": 9,
+            "note": "Masalah integrasi adalah bottleneck umum di dev"
+          },
+          "thinking": {
+            "score": 9,
+            "note": "Solusi (MSW) menunjukkan pemahaman workflow modern"
+          },
+          "total": 38
+        },
+        "competency": {
+          "code": "ACH",
+          "name": "Achievement Orientation",
+          "level": 4,
+          "behavior_note": "Mengambil inisiatif untuk memperbaiki proses kerja secara sukarela."
+        },
+        "concise": {
+          "consistency": {
+            "score": 10,
+            "note": "Sangat konsisten"
+          },
+          "clarity": {
+            "score": 10,
+            "note": "Sangat jernih"
+          },
+          "information": {
+            "score": 10,
+            "note": "Detail dampak '2 hari kerja' sangat kuat"
+          },
+          "structure": {
+            "score": 10,
+            "note": "Sangat terstruktur"
+          },
+          "effectiveness": {
+            "score": 10,
+            "note": "Sangat efektif"
+          },
+          "total": 50
+        },
+        "rating": 10,
+        "suggestion": "Pertahankan sikap proaktif ini karena ini yang membedakan Anda dengan developer biasa.",
+        "hack": "Gunakan kata kunci 'Blocker' dan sebutkan dampak efisiensi dalam satuan waktu (jam/hari).",
+        "better_answer_example": "Melihat tim terhambat dokumentasi API yang buruk, saya berinisiatif membangun shared types dan Mock Service Worker di akhir pekan. Langkah ini terbukti menghilangkan blocker integrasi dan mempercepat sprint hingga 2 hari kerja."
+      }
+    ],
+    "cv_jd_match": {
+      "score": 85,
+      "matched_skills_in_interview": [
+        "Next.js",
+        "TypeScript",
+        "JavaScript",
+        "Tailwind CSS",
+        "CI/CD",
+        "GitHub Actions",
+        "Unit Testing",
+        "React"
+      ],
+      "skill_gaps_addressed": [
+        "CI/CD pipeline tools",
+        "Modern JS Frameworks",
+        "Version Control Workflow"
+      ],
+      "skill_gaps_unaddressed": [
+        "2-3 years professional experience",
+        "MySQL/NoSQL (Redis/MongoDB) deep dive",
+        "WFO Batam relocation commitment",
+        "Laravel/PHP deep dive in interview"
+      ],
+      "assessment": "Secara teknis, Avit melampaui ekspektasi Full Stack Developer junior. Meskipun pengalaman profesionalnya masih minim (masih mahasiswa), kemampuan problem solving dan penguasaan tools-nya sangat matang. Perlu konfirmasi lebih lanjut mengenai kesediaan pindah ke Batam."
+    },
+    "strengths": [
+      "Penguasaan tools engineering modern (Husky, Vitest, MSW, TanStack) yang sangat mendalam.",
+      "Kemampuan analytical thinking yang kuat dalam membedah isu performa/bug kompleks.",
+      "Orientasi pada hasil dan metrik (percepatan 40%, skor Lighthouse 98, hemat 2 hari kerja).",
+      "Komunikasi yang sangat jernih, terstruktur, dan berbasis data."
+    ],
+    "weaknesses": [
+      "Belum memiliki pengalaman kerja profesional di lingkungan korporat berskala besar (masih di lingkup Lab/Proyek).",
+      "Fokus jawaban dominan di Front-end/Modern JS, sisi PHP/Laravel dan Database (MySQL/NoSQL) belum teruji dalam wawancara ini.",
+      "Status pendidikan yang masih berjalan (hingga 2027) berpotensi bentrok dengan jam kerja Full-time WFO."
+    ],
+    "final_recommendation": "Sangat direkomendasikan untuk direkrut sebagai High-Potential Junior atau Mid-level Developer. Kompetensi teknisnya sangat tinggi dan dia memiliki mindset engineering yang benar (testing, documentation, optimization). Pastikan untuk menegosiasikan jadwal kuliah vs jam kantor di Batam.",
+    "recommendation_verdict": "recommended"
+  },
+  "TC-API-07": {
+    "text": "Halo Avit, senang sekali melihat hasil evaluasi Anda. Sebagai mentor, saya sangat terkesan dengan skor **92** yang Anda raih.\n\nPerforma **STAR** Anda paling menonjol pada elemen **Action (A)**. Anda tidak hanya bercerita secara umum, tetapi memberikan bukti teknis yang sangat spesifik dan terukur—seperti keberhasilan meningkatkan *load time* sebesar 40% dan mencapai skor *Lighthouse* 98. Bagi kami di sisi HR, data konkret seperti ini adalah bukti nyata kompetensi *Technical Expertise* (EXP) yang sangat tinggi.\n\nSementara pada framework **FACT**, aspek **Thinking (T)** Anda sangat kuat. Anda mampu menjabarkan logika mendalam di balik pemilihan *workflow* kompleks seperti penggunaan Husky, MSW, hingga arsitektur *Compound Components*. Ini membuktikan bahwa Anda tidak sekadar \"bisa koding\", tetapi memahami strategi arsitektur dan efisiensi jangka panjang (sesuai skor *Analytical Thinking* Anda).\n\nNarasi Anda sudah setara dengan level *Mid-Senior Developer*. Saran saya, pertahankan konsistensi dalam menyertakan metrik keberhasilan ini, karena itulah yang membuat Anda menjadi *Star Performer* yang sangat kompetitif. Teruslah percaya diri!"
+  },
+  "TC-API-08": {
+    "mimeType": "audio/L16;codec=pcm;rate=24000",
+    "bytesLength": 333504
+  },
+  "TC-API-09": {
+    "star": {
+      "situation": {
+        "present": true,
+        "evidence": "terjadi memory leak di production saat load tinggi"
+      },
+      "task": {
+        "present": false,
+        "evidence": "–"
+      },
+      "action": {
+        "present": true,
+        "evidence": "menganalisis heap snapshot di Chrome DevTools, menemukan event listener yang bocor, dan memperbaikinya dengan cleanup di useEffect"
+      },
+      "result": {
+        "present": true,
+        "evidence": "latensi kembali normal di bawah 200ms"
+      },
+      "score": 3
+    },
+    "concise": {
+      "consistency": {
+        "score": 9,
+        "note": "Alur teknis dari diagnosa ke solusi sangat konsisten."
+      },
+      "clarity": {
+        "score": 10,
+        "note": "Sangat jernih, tools dan metrik yang digunakan disebutkan jelas."
+      },
+      "information": {
+        "score": 8,
+        "note": "Memberikan detail teknis (useEffect, DevTools) yang menunjukkan keahlian."
+      },
+      "structure": {
+        "score": 8,
+        "note": "Struktur kronologisnya rapi meski komponen 'Task' eksplisit terlewat."
+      },
+      "effectiveness": {
+        "score": 9,
+        "note": "Sangat efektif meyakinkan interviewer tentang kompetensi teknis."
+      },
+      "total": 44
+    },
+    "rating": 8,
+    "improvement_note": "Nah, gitu dong! Jauh lebih keren karena kamu kasih liat 'isi dapurnya' lewat penggunaan DevTools dan useEffect, bukan cuma klaim doang. Biar makin juara, tambahin dikit apa yang kamu rasain atau pikirin pas itu biar sisi humanis dan cara berpikir kritis kamu makin nonjol!",
+    "is_better": true
+  },
+  "TC-API-10": {
+    "text": "Wah, jujur ya, jawaban kamu tadi tuh \"to the point\" banget, tapi saking singkatnya malah jadi kurang \"daging\" buat saya. Cuma nyebutin nama library kayak Zustand atau React Query itu belum cukup, karena saya pengen tau cara pikir kamu. Di dunia kerja, pemilihan tools itu harus ada alasannya, bukan cuma ikut tren. Makanya, kamu justru harus mulai dari *problem statement*-nya dulu baru masuk ke solusi. Kasih tau saya *trade-off*-nya juga. Coba deh ganti gayanya jadi: \"Waktu itu project saya mulai ribet karena *prop drilling*, jadi saya pilih Zustand karena lebih ringan dibanding Redux.\" Nah, kerasa kan bedanya? Kamu jadi kelihatan paham masalah, bukan cuma sekadar hafal nama tools. Serius deh, tunjukin isi kepala kamu, jangan cuma sebut merek!"
+  }
+}
