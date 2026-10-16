@@ -205,6 +205,32 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset input value so re-selecting same file triggers onChange
+    e.target.value = '';
+
+    // Cek jika proses lain sedang berjalan agar tidak menabrak rate limit / concurrency Gemini
+    if (type === 'jd' && isCvAnalyzing) {
+      alert('Mohon tunggu CV Anda selesai diekstrak terlebih dahulu sebelum mengunggah Job Description.');
+      return;
+    }
+    if (type === 'cv' && isJdAnalyzing) {
+      alert('Mohon tunggu Job Description selesai diekstrak terlebih dahulu sebelum mengunggah CV.');
+      return;
+    }
+
+    // Validasi tipe file: Gemini API hanya mendukung PDF dan Gambar langsung
+    const isWordDoc = file.name.endsWith('.doc') || file.name.endsWith('.docx') || file.type.includes('word') || file.type.includes('officedocument');
+    if (isWordDoc) {
+      alert('Format Word (.docx / .doc) tidak didukung untuk ekstraksi file langsung oleh AI.\n\nSolusi: Buka file Word Anda, salin isinya, lalu gunakan tab "PASTE" untuk menempel teks secara langsung.');
+      return;
+    }
+
+    // Validasi ukuran payload untuk Vercel (maksimum 4 MB)
+    if (file.size > 4 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar (maksimal 4 MB di Vercel). Silakan kompres file atau gunakan tab "PASTE".');
+      return;
+    }
+
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     if (type === 'cv') setIsCvAnalyzing(true);
     else setIsJdAnalyzing(true);
@@ -212,7 +238,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64 = (event.target?.result as string).split(',')[1];
-      const mimeType = file.type;
+      const mimeType = file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
 
       try {
         if (type === 'cv') {
@@ -222,9 +248,10 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
           const extracted = await extractJD({ file: { base64, mimeType } });
           setJdData(extracted);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Extraction failed:', err);
-        alert('Gagal mengekstrak data dari file. Silakan coba tempel teks secara manual.');
+        const errMsg = err?.message || 'Gagal mengekstrak data dari file.';
+        alert(`Gagal mengekstrak data:\n\n${errMsg}\n\nTips: Anda juga bisa beralih ke tab "PASTE" untuk menempel teks secara manual.`);
       } finally {
         if (type === 'cv') setIsCvAnalyzing(false);
         else setIsJdAnalyzing(false);
@@ -247,17 +274,20 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
     if (jdNeeded) setIsJdAnalyzing(true);
 
     try {
-        const promises = [];
+        // Jalankan secara berurutan (sequential) untuk mencegah rate-limit / concurrency spike pada Gemini Free Tier
         if (cvNeeded) {
-          promises.push(extractCV({ text: cvRawText }).then(data => setCvData(data)));
+          const cData = await extractCV({ text: cvRawText });
+          setCvData(cData);
         }
         if (jdNeeded) {
-          promises.push(extractJD({ text: jdRawText }).then(data => setJdData(data)));
+          const jData = await extractJD({ text: jdRawText });
+          setJdData(jData);
         }
-        await Promise.all(promises);
         setStep('review');
-    } catch (e) {
+    } catch (e: any) {
         console.error('Structuring failed:', e);
+        const errMsg = e?.message || 'Gagal memproses teks.';
+        alert(`Gagal memproses: ${errMsg}\n\nTetap melanjutkan ke review data.`);
         setStep('review');
     } finally {
         setIsCvAnalyzing(false);
@@ -368,15 +398,23 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                   />
                 ) : (
                   <div 
-                    onClick={() => cvFileRef.current?.click()}
-                    className="w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-white/[0.03] transition-all cursor-pointer group"
+                    onClick={() => {
+                      if (isJdAnalyzing) {
+                        alert('Mohon tunggu Job Description selesai diekstrak terlebih dahulu.');
+                        return;
+                      }
+                      cvFileRef.current?.click();
+                    }}
+                    className={`w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group ${isJdAnalyzing ? 'opacity-40 cursor-not-allowed' : 'hover:bg-white/[0.03]'}`}
                   >
                     <div className="p-3 bg-white/[0.05] rounded-full group-hover:scale-105 transition-transform">
                         <FileUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <p className="text-white/50 text-sm font-medium">Klik untuk unggah PDF atau Gambar</p>
+                    <p className="text-white/50 text-sm font-medium">
+                      {isJdAnalyzing ? 'Tunggu Job Description selesai...' : 'Klik untuk unggah PDF atau Gambar'}
+                    </p>
                     <p className="text-[10px] text-white/25 uppercase tracking-widest">PDF, PNG, JPG</p>
-                    <input type="file" ref={cvFileRef} className="hidden" accept=".pdf,image/*" onChange={(e) => handleFileUpload(e, 'cv')} />
+                    <input type="file" ref={cvFileRef} className="hidden" accept=".pdf,image/*" disabled={isJdAnalyzing} onChange={(e) => handleFileUpload(e, 'cv')} />
                   </div>
                 )}
                 </div>
@@ -432,15 +470,23 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                   />
                 ) : (
                   <div 
-                    onClick={() => jdFileRef.current?.click()}
-                    className="w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-white/[0.03] transition-all cursor-pointer group"
+                    onClick={() => {
+                      if (isCvAnalyzing) {
+                        alert('Mohon tunggu CV Anda selesai diekstrak terlebih dahulu.');
+                        return;
+                      }
+                      jdFileRef.current?.click();
+                    }}
+                    className={`w-full h-52 sm:h-56 border border-dashed border-white/[0.12] rounded-xl flex flex-col items-center justify-center gap-3 transition-all cursor-pointer group ${isCvAnalyzing ? 'opacity-40 cursor-not-allowed' : 'hover:bg-white/[0.03]'}`}
                   >
                     <div className="p-3 bg-white/[0.05] rounded-full group-hover:scale-105 transition-transform">
                         <FileUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <p className="text-white/50 text-sm font-medium">Klik untuk unggah Job Description</p>
-                    <p className="text-[10px] text-white/25 uppercase tracking-widest">File apa saja</p>
-                    <input type="file" ref={jdFileRef} className="hidden" onChange={(e) => handleFileUpload(e, 'jd')} />
+                    <p className="text-white/50 text-sm font-medium">
+                      {isCvAnalyzing ? 'Tunggu CV selesai diproses...' : 'Klik untuk unggah Job Description'}
+                    </p>
+                    <p className="text-[10px] text-white/25 uppercase tracking-widest">PDF, PNG, JPG</p>
+                    <input type="file" ref={jdFileRef} className="hidden" accept=".pdf,image/*" disabled={isCvAnalyzing} onChange={(e) => handleFileUpload(e, 'jd')} />
                   </div>
                 )}
                 </div>
