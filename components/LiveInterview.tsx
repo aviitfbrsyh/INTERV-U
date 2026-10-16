@@ -485,26 +485,26 @@ ATURAN ALUR & JUMLAH PERTANYAAN (SIMULASI ±15 MENIT):
      • Sudut B — Mengenali pola masalah berulang: Gali pengalaman nyata saat kandidat menyadari ada pola masalah yang berulang dan merumuskan solusi sistemik (bukan sekadar tambal sulam).
      • Sudut C — Menerjemahkan kebutuhan bisnis ke teknis: Gali pengalaman nyata mentransformasi kebutuhan abstrak dari stakeholder menjadi solusi teknis yang konkret dan bisa diimplementasikan.
 
-  5. Pertanyaan 4 — CO (Concern for Order, Quality and Accuracy):
+  5. Pertanyaan 4 — ACH (Achievement Orientation):
+     Definisi: Kepedulian bekerja melebihi standar yang ditetapkan, fokus pada perbaikan terus-menerus dan efisiensi.
+     Pilih SALAH SATU sudut yang paling relevan:
+     • Sudut A — Optimasi performa sistem: Gali pengalaman nyata meningkatkan kecepatan, efisiensi, atau kualitas sistem secara signifikan melebihi target yang diminta.
+     • Sudut B — Komitmen target sprint/rilis: Gali pengalaman nyata berkomitmen keras memenuhi deadline rilis di tengah hambatan teknis yang besar.
+     • Sudut C — Standar pribadi lebih tinggi: Gali pengalaman nyata di mana kandidat menetapkan standar kualitas sendiri jauh lebih tinggi dari yang diminta tim atau klien.
+
+  6. Pertanyaan 5 — CO (Concern for Order, Quality and Accuracy):
      Definisi: Dorongan untuk memastikan keteraturan, kepastian, dan ketelitian untuk meminimalkan kekeliruan.
      Pilih SALAH SATU sudut yang paling relevan:
      • Sudut A — Deadline vs kualitas: Gali pengalaman nyata merilis fitur mendesak sambil mempertahankan standar kualitas tanpa kompromi.
      • Sudut B — Clean code & dokumentasi: Gali pengalaman nyata di mana ketelitian penulisan kode atau dokumentasi mencegah masalah besar di kemudian hari.
      • Sudut C — Testing mandiri sebelum review: Gali pengalaman nyata saat kandidat melakukan pengujian mandiri yang justru menemukan bug kritis sebelum code review tim.
 
-  6. Pertanyaan 5 — TW (Teamwork and Cooperation):
+  7. Pertanyaan 6 — TW (Teamwork and Cooperation):
      Definisi: Kemampuan dan kemauan bekerja sama secara harmonis demi mencapai tujuan kelompok.
      Pilih SALAH SATU sudut yang paling relevan:
      • Sudut A — Konflik teknis: Gali pengalaman nyata menghadapi perbedaan pendapat teknis tajam dengan rekan tim dan cara konkret penyelesaiannya.
      • Sudut B — Code review dua arah: Gali pengalaman nyata memberi atau menerima feedback kritis dalam sesi code review yang tidak nyaman.
      • Sudut C — Membantu rekan yang blocker: Gali pengalaman nyata saat kandidat proaktif membantu rekan tim yang mengalami hambatan demi keberhasilan bersama.
-
-  7. Pertanyaan 6 — ACH (Achievement Orientation):
-     Definisi: Kepedulian bekerja melebihi standar yang ditetapkan, fokus pada perbaikan terus-menerus dan efisiensi.
-     Pilih SALAH SATU sudut yang paling relevan:
-     • Sudut A — Optimasi performa sistem: Gali pengalaman nyata meningkatkan kecepatan, efisiensi, atau kualitas sistem secara signifikan melebihi target yang diminta.
-     • Sudut B — Komitmen target sprint/rilis: Gali pengalaman nyata berkomitmen keras memenuhi deadline rilis di tengah hambatan teknis yang besar.
-     • Sudut C — Standar pribadi lebih tinggi: Gali pengalaman nyata di mana kandidat menetapkan standar kualitas sendiri jauh lebih tinggi dari yang diminta tim atau klien.
 
   8. Pertanyaan 7 — INT (Initiative) — PERTANYAAN TERAKHIR:
      Wajib awali dengan tegas: "Ini adalah pertanyaan terakhir saya untuk sesi ini..."
