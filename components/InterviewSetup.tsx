@@ -22,7 +22,7 @@ const BEHAVIORAL_MODE = {
   traits: [
     'Pertanyaan terfokus pada 7 Kompetensi Utama IT (Spencer & Spencer)',
     'Eksplorasi pengalaman nyata berbasis metode STAR + FACT',
-    'Durasi simulasi terkalibrasi sekitar ±15 Menit',
+    'Durasi wawancara terkalibrasi sekitar ±30 Menit (Latihan Mendalam)',
   ],
   color: '#3b82f6',
   colorMuted: 'rgba(59,130,246,0.08)',
@@ -592,7 +592,7 @@ export default function InterviewSetup({ onStart }: InterviewSetupProps) {
                       Behavioral Event Interview (BEI)
                     </span>
                     <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                      ⏱️ Durasi ±15 Menit
+                      ⏱️ Durasi ±30 Menit
                     </span>
                   </div>
                 </div>
