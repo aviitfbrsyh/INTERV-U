@@ -1,0 +1,270 @@
+<?xml version="1.0" ?>
+<mxfile host="app.diagrams.net" modified="2026-10-18T10:15:00.000Z" agent="INTERV-U AI Agent" version="24.0.0" type="device">
+  <diagram id="bpmn-intervu-scoring" name="BPMN Alur Proses Evaluasi INTERV-U">
+    <mxGraphModel dx="1422" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="pool_1" value="SISTEM SIMULASI WAWANCARA KERJA INTERV-U (MULTI-FRAMEWORK BEI &amp; DETERMINISTIC SCORING)" style="swimlane;html=1;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=40;horizontal=0;horizontalFlip=1;fillColor=#0F172A;fontColor=#FFFFFF;fontStyle=1;fontSize=13;fontFamily=Segoe UI;swimlaneFillColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1560" height="920" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_user" value="1. KANDIDAT / USER" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#F8FAFC;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#F8FAFC;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="0" width="1520" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_frontend" value="2. MODUL FRONTEND &amp; AUDIO STREAM" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#F1F5F9;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#F1F5F9;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="120" width="1520" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_interviewer" value="3. PEWAWANCARA AI (BU SITI RAHAYU)" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#EFF6FF;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#EFF6FF;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="260" width="1520" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_llm_judge" value="4. LLM-AS-A-JUDGE (BUKTI KUALITATIF)" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#F5F3FF;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#F5F3FF;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="440" width="1520" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_scoring" value="5. MESIN SKOR DETERMINISTIK (KODE)" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#FEFCE8;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#FEFCE8;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="600" width="1520" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="lane_output" value="6. LAPORAN &amp; COACHING DASHBOARD" style="swimlane;html=1;startSize=30;horizontal=0;fillColor=#F0FDF4;fontColor=#1E293B;fontStyle=1;fontSize=11;fontFamily=Segoe UI;swimlaneFillColor=#F0FDF4;" vertex="1" parent="pool_1">
+          <mxGeometry x="40" y="760" width="1520" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="ev_start" value="Mulai" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="20" y="35" width="45" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_upload" value="Unggah Berkas CV (PDF/Teks)
+&amp; Masukkan Teks JD Target" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="95" y="27" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_cv_jd" value="Data Dokumen:
+• CV Pelamar IT
+• Job Description" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#E2E8F0;strokeColor=#94A3B8;fontColor=#334155;fontFamily=Segoe UI;fontSize=9;size=14;" vertex="1" parent="lane_user">
+          <mxGeometry x="275" y="27" width="105" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_user_answer" value="Menjawab Pertanyaan
+secara Lisan (Microphone)
+[Narasi Pengalaman]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="550" y="27" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_user_qa" value="Mengajukan Pertanyaan
+tentang Posisi / Perusahaan
+[Fase Candidate Q&amp;A]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="970" y="27" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_extract_api" value="Kirim Payload ke
+/api/extract
+(Ekstraksi Terstruktur)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_frontend">
+          <mxGeometry x="95" y="35" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_webrtc_conn" value="Inisialisasi Web Audio API
+&amp; Buka WebSocket Live
+(/api/live-token)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_frontend">
+          <mxGeometry x="265" y="35" width="150" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_audio_record" value="Streaming Audio PCM
+(24kHz Bidireksional)
+Deteksi Suara Nyata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_frontend">
+          <mxGeometry x="550" y="35" width="140" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_save_history" value="Susun Transkrip Utuh
+7 Pasang Tanya-Jawab
+(Q&amp;A Transcript History)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_frontend">
+          <mxGeometry x="1150" y="35" width="150" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_crossmatch" value="Analisis Cross-Match CV vs JD:
+• Deteksi Kesesuaian Skill
+• Identifikasi Area Skill Gap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_interviewer">
+          <mxGeometry x="265" y="25" width="170" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_ask_bei" value="Ajukan 7 Pertanyaan BEI
+(EXP, AT, CT, ACH, CO, TW, INT)
+[Pilih Sudut A/B/C Dinamis]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_interviewer">
+          <mxGeometry x="465" y="25" width="170" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="gw_probing" value="Apakah
+Jawaban
+Klise / Tim?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontStyle=1;fontSize=10;" vertex="1" parent="lane_interviewer">
+          <mxGeometry x="665" y="30" width="70" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_do_probing" value="Probing Mendalam:
+• STAR (Action pribadi?)
+• FACT (Konsekuensi &amp; logis)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_interviewer">
+          <mxGeometry x="765" y="25" width="160" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_closing_qa" value="Fase Penutupan 3 Langkah:
+1. Apresiasi Sesi
+2. Buka Kesempatan Tanya
+3. Jawab Pertanyaan JD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E3A8A;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_interviewer">
+          <mxGeometry x="960" y="25" width="160" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_call_evaluate" value="Kirim Transkrip Lengkap
+ke Endpoint /api/evaluate
+(LLM-as-a-Judge Engine)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_llm_judge">
+          <mxGeometry x="1150" y="40" width="150" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_kamus_spencer" value="Rujukan Resmi:
+Kamus Kompetensi
+Spencer &amp; Spencer (1993)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#E2E8F0;strokeColor=#94A3B8;fontColor=#334155;fontFamily=Segoe UI;fontSize=9;size=14;" vertex="1" parent="lane_llm_judge">
+          <mxGeometry x="960" y="45" width="140" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_extract_star" value="Ekstraksi Komponen STAR:
+Deteksi Situation, Task,
+Action, Result (0-4 Poin)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_llm_judge">
+          <mxGeometry x="760" y="40" width="155" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_eval_fact" value="Audit Bukti Pengalaman FACT:
+• Feeling (1-10) • Action (1-10)
+• Context (1-10) • Thinking (1-10)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_llm_judge">
+          <mxGeometry x="570" y="40" width="160" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_map_levels" value="Pencocokan Level Capaian:
+Petakan Bukti Transkrip
+ke Skala Level Spencer 1-5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_llm_judge">
+          <mxGeometry x="380" y="40" width="160" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="d_matriks_bobot" value="Matriks Bobot Posisi Bu Rina:
+Programmer: AT=25%, EXP=20%..
+UI/UX: CT=20%, EXP=20%.." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#E2E8F0;strokeColor=#94A3B8;fontColor=#334155;fontFamily=Segoe UI;fontSize=9;size=14;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="180" y="45" width="160" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_calc_sbase" value="Hitung Skor Dasar S_base:
+S_base = min(100, (L_act/L_target)*80)
+[Bukan Tebakan Bebas AI]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF08A;strokeColor=#CA8A04;fontColor=#854D0E;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="380" y="40" width="175" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_calc_fact_mult" value="Hitung Pengali Integritas:
+μ_FACT = 0.85 + (0.30 * FACT_norm)
+S_i = min(100, S_base * μ_FACT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF08A;strokeColor=#CA8A04;fontColor=#854D0E;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="580" y="40" width="175" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_calc_composite" value="Kalkulasi Skor Akhir Terbobot:
+Skor_Akhir = SUM(w_i * S_i)
+[Simple Additive Weighting]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF08A;strokeColor=#CA8A04;fontColor=#854D0E;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="780" y="40" width="175" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="gw_threshold" value="Evaluasi
+Passing Grade
+Skor &gt;= 75?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontStyle=1;fontSize=10;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="985" y="42" width="80" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_verdict_rec" value="Verdict: RECOMMENDED
+(Lolos Standar Industri)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#22C55E;fontColor=#166534;fontFamily=Segoe UI;fontSize=10;fontStyle=1;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="1100" y="20" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_verdict_cond" value="Verdict: CONDITIONAL
+(Pertimbangan / Gap Minor)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="1100" y="80" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_verdict_fail" value="Verdict: NOT RECOMMENDED
+(Skor &lt; 60 / Gap Fatal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_scoring">
+          <mxGeometry x="1270" y="50" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_render_radar" value="Visualisasi Radar Chart
+7 Kompetensi Spencer (1-5)
+vs Target Role IT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_output">
+          <mxGeometry x="580" y="35" width="160" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_render_fact" value="Render Grafik Batang FACT
+&amp; Profil Archetype Kandidat
+(ConCISE Communication)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_output">
+          <mxGeometry x="780" y="35" width="160" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="t_actionable_plan" value="Sajikan Feedback Komprehensif:
+• Actionable Hacks • Saran Jawaban
+• Modul Latihan Coaching AI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;fontColor=#0F172A;fontFamily=Segoe UI;fontSize=10;arcSize=14;shadow=1;" vertex="1" parent="lane_output">
+          <mxGeometry x="980" y="35" width="170" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="ev_end" value="Selesai" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#EF4444;strokeColor=#DC2626;strokeWidth=3;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="lane_output">
+          <mxGeometry x="1200" y="45" width="45" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="ev_start" target="t_upload">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_upload" target="t_extract_api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="Data Ekstraksi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_extract_api" target="t_webrtc_conn">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_webrtc_conn" target="t_crossmatch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="Data Prioritas Gap" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_crossmatch" target="t_ask_bei">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" value="Ajukan Pertanyaan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_ask_bei" target="t_audio_record">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" value="Suara Kandidat" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_audio_record" target="t_user_answer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e8" value="Audio Respons" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_user_answer" target="gw_probing">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" value="Ya (Abstrak)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="gw_probing" target="t_do_probing">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10" value="Probe Lanjutan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_do_probing" target="t_user_answer">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e11" value="Tidak (Cukup)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="gw_probing" target="t_closing_qa">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e12" value="Buka Tanya Jawab" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_closing_qa" target="t_user_qa">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e13" value="Sesi Tuntas (30 Min)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_user_qa" target="t_save_history">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e14" value="Kirim Transkrip" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_save_history" target="t_call_evaluate">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_call_evaluate" target="t_extract_star">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_extract_star" target="t_eval_fact">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e17" value="Gunakan Kamus Spencer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_eval_fact" target="t_map_levels">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e18" value="Level Aktual (1-5)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_map_levels" target="t_calc_sbase">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e19" value="Terapkan Bobot w_i" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_calc_sbase" target="t_calc_fact_mult">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e20" value="Skor Tiap Kompetensi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_calc_fact_mult" target="t_calc_composite">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e21" value="Skor Akhir Terbobot" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_calc_composite" target="gw_threshold">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e22" value="Skor &gt;= 75" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="gw_threshold" target="t_verdict_rec">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e23" value="60 &lt;= Skor &lt; 75" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="gw_threshold" target="t_verdict_cond">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e24" value="Skor &lt; 60" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="gw_threshold" target="t_verdict_fail">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_verdict_rec" target="t_render_radar">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e26" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_verdict_cond" target="t_render_radar">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e27" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_verdict_fail" target="t_render_radar">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_render_radar" target="t_render_fact">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_render_fact" target="t_actionable_plan">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=1.5;fontFamily=Segoe UI;fontSize=9.5;" edge="1" parent="1" source="t_actionable_plan" target="ev_end">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
