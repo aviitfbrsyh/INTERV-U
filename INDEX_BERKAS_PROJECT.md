@@ -8,6 +8,8 @@ Folder ini memuat seluruh materi riset, instrumen, dan laporan yang siap diserah
 
 | Nama File | Format | Keterangan & Kegunaan |
 |:---|:---:|:---|
+| [`P06-23523238-Avit Febriansyah.docx`](file:///d:/intervyou%20edit%20bu%20rina/INTERV-U/bimbingan_bu_rina/P06-23523238-Avit%20Febriansyah.docx) | Word (.docx) | **BERKAS RESMI TUGAS & PRESENSI P06:** Dokumen formal rekapitulasi seluruh PR bimbingan, dilengkapi tangkapan layar BPMN & Excel JobStreet. |
+| [`P06-23523238-Avit Febriansyah.md`](file:///d:/intervyou%20edit%20bu%20rina/INTERV-U/bimbingan_bu_rina/P06-23523238-Avit%20Febriansyah.md) | Markdown (.md) | **Versi Teks Lengkap Laporan P06:** Seluruh uraian detail PR 1 s/d PR 7 dengan format Markdown dan tautan interaktif. |
 | [`MATRIKS_KOMPETENSI_IT_JOBSTREET_BU_RINA.xlsx`](file:///d:/intervyou%20edit%20bu%20rina/INTERV-U/bimbingan_bu_rina/MATRIKS_KOMPETENSI_IT_JOBSTREET_BU_RINA.xlsx) | Excel (.xlsx) | **File Utama Siap Kirim:** 4 sheet berstandar HRD (Matriks Target Level 1–5 & Bobot % untuk diisi Bu Rina, 27 database JobStreet, dan rujukan Spencer). |
 | [`BPMN_PROSES_EVALUASI_INTERVU.drawio`](file:///d:/intervyou%20edit%20bu%20rina/INTERV-U/bimbingan_bu_rina/BPMN_PROSES_EVALUASI_INTERVU.drawio) | Draw.io (.drawio) | **Diagram Visual BPMN (6 Swimlane):** Dapat dibuka dan diekspor ke gambar di [https://app.diagrams.net/](https://app.diagrams.net/) untuk Bab III skripsi. |
 | [`LAPORAN_PROSES_BISNIS_BPMN_DAN_PENSKORAN.md`](file:///d:/intervyou%20edit%20bu%20rina/INTERV-U/bimbingan_bu_rina/LAPORAN_PROSES_BISNIS_BPMN_DAN_PENSKORAN.md) | Markdown (.md) | **Laporan Metodologi Lengkap:** Menjelaskan alur BPMN, pembagian tugas LLM vs kode deterministik, dan justifikasi akademik anti-halusinasi AI. |
